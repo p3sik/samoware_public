@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="DebugClang|Win32">
+      <Configuration>DebugClang</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugClang|x64">
+      <Configuration>DebugClang</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{210dcc35-9625-4343-8452-5a8ad47a1a4e}</ProjectGuid>
+    <RootNamespace>samowarev2</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include;$(IncludePath)</IncludePath>
+    <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include;$(IncludePath)</IncludePath>
+    <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
+    <LibraryPath>$(ProjectDir)cheatframework\3rdparty\freetype\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include;$(IncludePath)</IncludePath>
+    <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);CFW_RENDERER_DX9</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <StackReserveSize>
+      </StackReserveSize>
+      <StackCommitSize>
+      </StackCommitSize>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;SAMOWARE_CLANG;%(PreprocessorDefinitions);CFW_RENDERER_DX9</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <StackReserveSize>
+      </StackReserveSize>
+      <StackCommitSize>
+      </StackCommitSize>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);CFW_RENDERER_DX9</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\backends\imgui_impl_dx9.cpp" />
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui.cpp" />
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\cheatframework\src\basefunchook.cpp" />
+    <ClCompile Include="..\cheatframework\src\hookmgr.cpp" />
+    <ClCompile Include="..\cheatframework\src\logger.cpp" />
+    <ClCompile Include="..\samoware_internal\minhook\src\buffer.c" />
+    <ClCompile Include="..\samoware_internal\minhook\src\hde\hde32.c" />
+    <ClCompile Include="..\samoware_internal\minhook\src\hde\hde64.c" />
+    <ClCompile Include="..\samoware_internal\minhook\src\hook.c" />
+    <ClCompile Include="..\samoware_internal\minhook\src\trampoline.c" />
+    <ClCompile Include="src\cheat.cpp" />
+    <ClCompile Include="src\cheats\luaapi.cpp" />
+    <ClCompile Include="src\cheats\lualoader.cpp" />
+    <ClCompile Include="src\cheats\misc.cpp" />
+    <ClCompile Include="src\cheats\prediction.cpp" />
+    <ClCompile Include="src\hooks\checkforsequencechange.cpp" />
+    <ClCompile Include="src\hooks\createmove.cpp" />
+    <ClCompile Include="src\hooks\endscene.cpp" />
+    <ClCompile Include="src\hooks\framestagenotify.cpp" />
+    <ClCompile Include="src\hooks\isplayingtimedemo.cpp" />
+    <ClCompile Include="src\hooks\luastringdump.cpp" />
+    <ClCompile Include="src\hooks\packetstart.cpp" />
+    <ClCompile Include="src\hooks\painttraverse.cpp" />
+    <ClCompile Include="src\hooks\runcommand.cpp" />
+    <ClCompile Include="src\hooks\sendnetmsg.cpp" />
+    <ClCompile Include="src\hooks\setupbones.cpp" />
+    <ClCompile Include="src\hooks\shouldinterpolate.cpp" />
+    <ClCompile Include="src\hooks\updateclientsideanimation.cpp" />
+    <ClCompile Include="src\hooks\wndproc.cpp" />
+    <ClCompile Include="src\interfaces.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\menu.cpp" />
+    <ClCompile Include="src\netvars.cpp" />
+    <ClCompile Include="src\sdk\bitbuf.cpp" />
+    <ClCompile Include="src\sdk\luajit.cpp" />
+    <ClCompile Include="src\sdk\vstdlib.cpp" />
+    <ClCompile Include="src\texteditor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\samoware\cheat.h" />
+    <ClInclude Include="include\samoware\cheats\luaapi.h" />
+    <ClInclude Include="include\samoware\cheats\lualoader.h" />
+    <ClInclude Include="include\samoware\cheats\misc.h" />
+    <ClInclude Include="include\samoware\cheats\prediction.h" />
+    <ClInclude Include="include\samoware\config.h" />
+    <ClInclude Include="include\samoware\crc32.h" />
+    <ClInclude Include="include\samoware\external.h" />
+    <ClInclude Include="include\samoware\globals.h" />
+    <ClInclude Include="include\samoware\hooks\checkforsequencechange.h" />
+    <ClInclude Include="include\samoware\hooks\createmove.h" />
+    <ClInclude Include="include\samoware\hooks\endscene.h" />
+    <ClInclude Include="include\samoware\hooks\framestagenotify.h" />
+    <ClInclude Include="include\samoware\hooks\isplayingtimedemo.h" />
+    <ClInclude Include="include\samoware\hooks\luastringdump.h" />
+    <ClInclude Include="include\samoware\hooks\packetstart.h" />
+    <ClInclude Include="include\samoware\hooks\painttraverse.h" />
+    <ClInclude Include="include\samoware\hooks\runcommand.h" />
+    <ClInclude Include="include\samoware\hooks\sendnetmsg.h" />
+    <ClInclude Include="include\samoware\hooks\setupbones.h" />
+    <ClInclude Include="include\samoware\hooks\shouldinterpolate.h" />
+    <ClInclude Include="include\samoware\hooks\updateclientsideanimation.h" />
+    <ClInclude Include="include\samoware\hooks\wndproc.h" />
+    <ClInclude Include="include\samoware\imgui_custom.h" />
+    <ClInclude Include="include\samoware\interfaces.h" />
+    <ClInclude Include="include\samoware\md5.h" />
+    <ClInclude Include="include\samoware\menu.h" />
+    <ClInclude Include="include\samoware\netvars.h" />
+    <ClInclude Include="include\samoware\sdk\angle.h" />
+    <ClInclude Include="include\samoware\sdk\bitbuf.h" />
+    <ClInclude Include="include\samoware\sdk\cbaseentity.h" />
+    <ClInclude Include="include\samoware\sdk\cbaseplayeranimstate.h" />
+    <ClInclude Include="include\samoware\sdk\cclientstate.h" />
+    <ClInclude Include="include\samoware\sdk\cglobalvars.h" />
+    <ClInclude Include="include\samoware\sdk\chlclient.h" />
+    <ClInclude Include="include\samoware\sdk\cinput.h" />
+    <ClInclude Include="include\samoware\sdk\cluashared.h" />
+    <ClInclude Include="include\samoware\sdk\cprediction.h" />
+    <ClInclude Include="include\samoware\sdk\cusercmd.h" />
+    <ClInclude Include="include\samoware\sdk\cutlvector.h" />
+    <ClInclude Include="include\samoware\sdk\defines.h" />
+    <ClInclude Include="include\samoware\sdk\icliententitylist.h" />
+    <ClInclude Include="include\samoware\sdk\iengineclient.h" />
+    <ClInclude Include="include\samoware\sdk\igamemovement.h" />
+    <ClInclude Include="include\samoware\sdk\iluabase.h" />
+    <ClInclude Include="include\samoware\sdk\inetchannel.h" />
+    <ClInclude Include="include\samoware\sdk\ipanel.h" />
+    <ClInclude Include="include\samoware\sdk\luajit.h" />
+    <ClInclude Include="include\samoware\sdk\math.h" />
+    <ClInclude Include="include\samoware\sdk\recv.h" />
+    <ClInclude Include="include\samoware\sdk\varmap.h" />
+    <ClInclude Include="include\samoware\sdk\vector.h" />
+    <ClInclude Include="include\samoware\sdk\vstdlib.h" />
+    <ClInclude Include="include\samoware\util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="src\external.asm">
+      <FileType>Document</FileType>
+    </MASM>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
+</Project>

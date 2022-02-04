@@ -1,0 +1,350 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="3rdparty">
+      <UniqueIdentifier>{2c885479-5c04-47f3-b7b4-80b4f7e3254d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\minhook">
+      <UniqueIdentifier>{24ce063b-6604-44d1-8a94-961a7dc68975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\minhook\src">
+      <UniqueIdentifier>{558be5c0-c136-4c97-b407-4efcf5025952}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\minhook\src\hde">
+      <UniqueIdentifier>{76fbf979-a416-45d5-a713-2050166203c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\imgui">
+      <UniqueIdentifier>{59a16b28-e695-496c-94bb-ef7e95f745a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\cfw">
+      <UniqueIdentifier>{72b05153-8e79-4f4c-a6a2-a741b190c88f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\cfw\hooks">
+      <UniqueIdentifier>{dcb89877-47fc-49f4-aa2e-0a1ec289b0b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\sdk">
+      <UniqueIdentifier>{2c474dce-f80a-4e7d-bb40-6924d02e5542}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sdk">
+      <UniqueIdentifier>{abbf4e29-50b3-46a7-be83-b5d63077b02c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\hooks">
+      <UniqueIdentifier>{bb1f1252-78fb-47ca-81c5-273154148ae1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\hooks">
+      <UniqueIdentifier>{4760552c-fe11-440f-acf8-e3a645f05143}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cheats">
+      <UniqueIdentifier>{46122375-8ee7-4d9c-a542-f671a7c41695}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\cheats">
+      <UniqueIdentifier>{a4290244-96a3-402f-bf63-d39a5771f016}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\samoware_internal\minhook\src\buffer.c">
+      <Filter>3rdparty\minhook\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\samoware_internal\minhook\src\hook.c">
+      <Filter>3rdparty\minhook\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\samoware_internal\minhook\src\trampoline.c">
+      <Filter>3rdparty\minhook\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\samoware_internal\minhook\src\hde\hde32.c">
+      <Filter>3rdparty\minhook\src\hde</Filter>
+    </ClCompile>
+    <ClCompile Include="..\samoware_internal\minhook\src\hde\hde64.c">
+      <Filter>3rdparty\minhook\src\hde</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_tables.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_widgets.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_draw.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\backends\imgui_impl_dx9.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cheatframework\3rdparty\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cheatframework\src\hookmgr.cpp">
+      <Filter>3rdparty\cfw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cheatframework\src\logger.cpp">
+      <Filter>3rdparty\cfw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cheatframework\src\basefunchook.cpp">
+      <Filter>3rdparty\cfw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\interfaces.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sdk\bitbuf.cpp">
+      <Filter>Source Files\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\netvars.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\framestagenotify.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cheat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\endscene.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\wndproc.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cheats\misc.cpp">
+      <Filter>Source Files\cheats</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\createmove.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\painttraverse.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\texteditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\luastringdump.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cheats\lualoader.cpp">
+      <Filter>Source Files\cheats</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cheats\prediction.cpp">
+      <Filter>Source Files\cheats</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cheats\luaapi.cpp">
+      <Filter>Source Files\cheats</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sdk\vstdlib.cpp">
+      <Filter>Source Files\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\setupbones.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\shouldinterpolate.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\checkforsequencechange.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\isplayingtimedemo.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\updateclientsideanimation.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sdk\luajit.cpp">
+      <Filter>Source Files\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\runcommand.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\sendnetmsg.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\packetstart.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\samoware\cheat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\interfaces.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\chlclient.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\iengineclient.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\inetchannel.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\bitbuf.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\recv.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\netvars.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\cbaseentity.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\defines.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\framestagenotify.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\endscene.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\wndproc.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\cheats\misc.h">
+      <Filter>Header Files\cheats</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\createmove.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\vector.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\angle.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\cinput.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\cusercmd.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\crc32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\imgui_custom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\cglobalvars.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\icliententitylist.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\painttraverse.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\ipanel.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\iluabase.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\cluashared.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\luastringdump.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\cheats\lualoader.h">
+      <Filter>Header Files\cheats</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\luajit.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\igamemovement.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\cprediction.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\cheats\prediction.h">
+      <Filter>Header Files\cheats</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\cheats\luaapi.h">
+      <Filter>Header Files\cheats</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\md5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\vstdlib.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\math.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\external.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\setupbones.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\shouldinterpolate.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\checkforsequencechange.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\isplayingtimedemo.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\cbaseplayeranimstate.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\updateclientsideanimation.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\cutlvector.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\varmap.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\runcommand.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\sendnetmsg.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\cclientstate.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\packetstart.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="src\external.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
+  </ItemGroup>
+</Project>
