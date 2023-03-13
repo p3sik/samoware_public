@@ -9,7 +9,7 @@ local IsValid = IsValid
 local TraceLine, TraceHull = util.TraceLine, util.TraceHull
 
 local mabs, msin, mcos, mClamp, mrandom, mRand = math.abs, math.sin, math.cos, math.Clamp, math.random, math.Rand
-local mceil, mfloor, msqrt, mrad, mdeg = math.ceil, math.floor, math.sqrt, math.rad, math.deg
+local msqrt, mrad, mdeg = math.sqrt, math.rad, math.deg
 local mmin, mmax = math.min, math.max
 local mNormalizeAng = math.NormalizeAngle
 local band, bor, bnot = bit.band, bit.bor, bit.bnot
@@ -205,7 +205,7 @@ function dscombobox:OpenMenu()
 	self:CloseMenu()
 
 	self.Menu = DermaMenu(false, self)
-	
+
 	local x, y = input.GetCursorPos()
 	self.Menu:SetPos(x, y)
 
@@ -365,7 +365,7 @@ function dsbinder:DoRightClick()
 
 	for i = 1, #bindermodes do
 		local v = bindermodes[i]
-		
+
 		local option = self.Menu:AddOption(v, function()
 			self.Mode = v
 			self:UpdateText()
@@ -449,6 +449,9 @@ local settings = {
 		Prediction = "None",
 		BoneMode = "Center",
 		HitScanMode = "Damage",
+		["Force head"] = false,
+		MultiPoint = false,
+		MultiPointFactor = 0,
 		["Invert on shot"] = false,
 		FOV = false,
 		["FOV cone"] = 180,
@@ -463,7 +466,7 @@ local settings = {
 		AutoPistol = false,
 		Delay = 0,
 		FixErrors = false,
-		
+
 		-- Ignores
 		["Ignore bots"] = false,
 		["Ignore friends"] = false,
@@ -491,6 +494,7 @@ local settings = {
 		AimTarget = false,
 		Tracers = false,
 		ESPDistance = 1000,
+		HitMiss = false,
 		BulletTracers = false,
 		["Tracers die time"] = 3,
 		["Max tracers"] = 10,
@@ -559,25 +563,33 @@ local settings = {
 
 		-- Resolver
 		Resolver = false,
+		ResolveFakePitch = false,
+		ResolverMode = "Absolute",
+		Backshoot = false,
+		ForceBackshoot = false,
 		LagFix = false,
 		ActResolver = false,
 		NoInterp = false,
 		Backtrack = false,
 		BacktrackAmount = 0,
+		Forwardtrack = false,
+		ForwardtrackAmount = 0,
 
 		-- Fakelag
 		FakeLag = false,
-		["FakeLag send"] = 1,
 		["FakeLag choke"] = 1,
 		["Break lagcomp"] = false,
+		["Randomize choke"] = false,
 		["FakeLag on peek"] = false,
 		["FakeLag in air"] = false,
+		["FakeLag on shoot"] = false,
 		FakeEblanKey = {
 			key = 0,
 			mode = "Hold"
 		},
 		FakeEblanMode = "Mega",
 		["FakeEblan strength"] = 0,
+		["Duck in air"] = false,
 
 		-- Modules
 		Enginepred = false,
@@ -590,7 +602,7 @@ local settings = {
 		net_fakejitter = 0,
 		net_fakeloss = 0,
 		host_timescale = 1,
-		
+
 		-- Tickbase manip
 		Warp = false,
 		["Warp shift"] = 24,
@@ -611,6 +623,7 @@ local settings = {
 		AirStrafe = false,
 		["Multidir. autostrafe"] = false,
 		["Multidir. indicator"] = false,
+		["Michael Jackson"] = false,
 		["Flashlight spam"] = false,
 		["Chat killrow"] = false,
 		KillrowMode = "Russian",
@@ -626,7 +639,10 @@ local settings = {
 			key = 0,
 			mode = "Hold"
 		},
-		["CStrafe max radius"] = 0,
+		-- ["CStrafe max speed loss"] = 0,
+		["CStrafe jobs"] = 1,
+		["CStrafe threads"] = 1,
+		["CStrafe sim time"] = 0.1,
 		Fastwalk = false,
 		["SimplAC safe mode"] = false,
 		["Spectator memes"] = false,
@@ -961,6 +977,11 @@ local function OpenAimbotTab()
 		"Safety"
 	}, at)
 
+
+	AddElement(NamedCheckbox, activetab, "Force head", at)
+	AddElement(NamedCheckbox, activetab, "MultiPoint", at)
+	AddElement(Slider, activetab, "MultiPointFactor", 0, 1, 2, at)
+
 	AddElement(NamedCheckbox, activetab, "Invert on shot", at)
 	AddElement(NamedCheckbox, activetab, "FOV", at)
 	AddElement(Slider, activetab, "FOV cone", 0, 180, 1, at)
@@ -975,20 +996,20 @@ local function OpenAimbotTab()
 	AddElement(NamedCheckbox, activetab, "AutoPistol", at)
 	AddElement(Slider, activetab, "Delay", 0, 1000, 0, at)
 	AddElement(NamedCheckbox, activetab, "FixErrors", at)
-	
+
 	at:SetSize(140, _ypos)
-	
+
 	local ai = ThemeBox(activetab, "Ignores", tabpnl)
 	ai:SetPos(144, 0)
-	
+
 	_ypos = 25
-	
+
 	AddElement(NamedCheckbox, activetab, "Ignore bots", ai)
 	AddElement(NamedCheckbox, activetab, "Ignore friends", ai)
 	AddElement(NamedCheckbox, activetab, "Ignore admins", ai)
 	AddElement(NamedCheckbox, activetab, "Ignore legits", ai)
 	AddElement(NamedCheckbox, activetab, "Ignore team", ai)
-	
+
 	ai:SetSize(140, _ypos)
 end
 
@@ -1013,6 +1034,7 @@ local function OpenVisualsTab()
 	AddElement(NamedCheckbox, activetab, "AimTarget", pv)
 	AddElement(NamedCheckbox, activetab, "Tracers", pv)
 	AddElement(Slider, activetab, "ESPDistance", 0, 32768, 0, pv)
+	AddElement(NamedCheckbox, activetab, "HitMiss", pv)
 	AddElement(NamedCheckbox, activetab, "BulletTracers", pv)
 	AddElement(Slider, activetab, "Tracers die time", 0, 10, 1, pv)
 	AddElement(Slider, activetab, "Max tracers", 0, 30, 0, pv)
@@ -1090,7 +1112,10 @@ local function OpenHvHTab()
 		"Legit",
 		"LBY",
 		"LBY Break",
-		"LBY Break legit"
+		"LBY Break legit",
+		"Anti BruteForce",
+		"HandBlock",
+		"Hruxis"
 	}, aa)
 	AddElement(ComboBox, activetab, "FakePitch", {
 		"None",
@@ -1130,11 +1155,17 @@ local function OpenHvHTab()
 	_ypos = 25
 
 	AddElement(NamedCheckbox, activetab, "Resolver", rs)
+	AddElement(NamedCheckbox, activetab, "ResolveFakePitch", rs)
+	AddElement(ComboBox, activetab, "ResolverMode", {"Absolute", "Relative", "StatAbs", "StatRel"}, rs)
+	AddElement(NamedCheckbox, activetab, "Backshoot", rs)
+	AddElement(NamedCheckbox, activetab, "ForceBackshoot", rs)
 	AddElement(NamedCheckbox, activetab, "LagFix", rs)
 	AddElement(NamedCheckbox, activetab, "ActResolver", rs)
 	AddElement(NamedCheckbox, activetab, "NoInterp", rs)
 	AddElement(NamedCheckbox, activetab, "Backtrack", rs)
 	AddElement(Slider, activetab, "BacktrackAmount", 0, 1000, 2, rs)
+	AddElement(NamedCheckbox, activetab, "Forwardtrack", rs)
+	AddElement(Slider, activetab, "ForwardtrackAmount", 0, 1, 2, rs)
 	local rsbtn = AddElement(Button, activetab, "Configure", rs)
 	rs:SetSize(140, _ypos)
 
@@ -1144,60 +1175,60 @@ local function OpenHvHTab()
 	fl:SetPos(144, 0)
 
 	AddElement(NamedCheckbox, activetab, "FakeLag", fl)
-	AddElement(Slider, activetab, "FakeLag send", 1, 14, 0, fl)
-	AddElement(Slider, activetab, "FakeLag choke", 1, 14, 0, fl)
+	AddElement(Slider, activetab, "FakeLag choke", 1, 21, 0, fl)
 	AddElement(NamedCheckbox, activetab, "Break lagcomp", fl)
+	AddElement(NamedCheckbox, activetab, "Randomize choke", fl)
 	AddElement(NamedCheckbox, activetab, "FakeLag on peek", fl)
 	AddElement(NamedCheckbox, activetab, "FakeLag in air", fl)
+	AddElement(NamedCheckbox, activetab, "FakeLag on shoot", fl)
 	AddElement(NamedCheckbox, activetab, "FakeEblan", fl)
 	AddElement(Binder, activetab, "FakeEblanKey", fl)
 	AddElement(ComboBox, activetab, "FakeEblanMode", {
 		"Mega", "Slippery", "Airstuck", "M9K", "Test"
 	}, fl)
 	AddElement(Slider, activetab, "FakeEblan strength", 0, 150, 0, fl)
-	AddElement(NamedCheckbox, activetab, "Shift tickbase", fl)
-	AddElement(NamedCheckbox, activetab, "Warp on peek", fl)
+	AddElement(NamedCheckbox, activetab, "Duck in air", fl)
 
 	fl:SetSize(140, _ypos)
-	
+
 	local em = ThemeBox(activetab, "Enable modules", tabpnl)
 	em:SetPos(144, _ypos)
-	
+
 	_ypos = 25
-	
+
 	AddElement(NamedCheckbox, activetab, "Enginepred", em)
 	AddElement(NamedCheckbox, activetab, "Dickwrap", em)
 	AddElement(NamedCheckbox, activetab, "Cvar3", em)
-	
+
 	em:SetSize(140, _ypos)
-	
+
 	_ypos = 25
-	
+
 	local cm = ThemeBox(activetab, "Cvar manipulation", tabpnl)
 	cm:SetPos(288, 0)
-	
+
 	_ypos = 25
-	
+
 	AddElement(NamedCheckbox, activetab, "Manip. enabled", cm)
 	AddElement(Slider, activetab, "net_fakelag", 0, 1000, 0, cm)
 	AddElement(Slider, activetab, "net_fakejitter", 0, 1000, 0, cm)
 	AddElement(Slider, activetab, "net_fakeloss", 0, 1000, 0, cm)
 	AddElement(Slider, activetab, "host_timescale", 0.01, 10, 2, cm)
-	
+
 	cm:SetSize(140, _ypos)
-	
+
 	local tm = ThemeBox(activetab, "Tickbase manipulation", tabpnl)
 	tm:SetPos(288, _ypos)
-	
+
 	_ypos = 25
-	
+
 	AddElement(NamedCheckbox, activetab, "Warp", tm)
 	AddElement(Slider, activetab, "Warp shift", 1, MAX_TICKBASE_SHIFT, 0, tm)
 	AddElement(Binder, activetab, "WarpKey", tm)
 	AddElement(Binder, activetab, "WarpRechargeKey", tm)
 	AddElement(NamedCheckbox, activetab, "Warp on peek", tm)
 	AddElement(NamedCheckbox, activetab, "Doubletap", tm)
-	
+
 	tm:SetSize(140, _ypos)
 end
 
@@ -1210,6 +1241,7 @@ local function OpenMiscTab()
 	AddElement(NamedCheckbox, activetab, "AirStrafe", mt)
 	AddElement(NamedCheckbox, activetab, "Multidir. autostrafe", mt)
 	AddElement(NamedCheckbox, activetab, "Multidir. indicator", mt)
+	AddElement(NamedCheckbox, activetab, "Michael Jackson", mt)
 	AddElement(NamedCheckbox, activetab, "Flashlight spam", mt)
 	AddElement(NamedCheckbox, activetab, "Chat killrow", mt)
 	AddElement(ComboBox, activetab, "KillrowMode", {
@@ -1239,7 +1271,18 @@ local function OpenMiscTab()
 	AddElement(NamedCheckbox, activetab, "Fastwalk", mt)
 	AddElement(NamedCheckbox, activetab, "CStrafe", mt)
 	AddElement(Binder, activetab, "CStrafeKey", mt)
-	AddElement(Slider, activetab, "CStrafe max radius", 0, 200, 1, mt)
+	-- AddElement(Slider, activetab, "CStrafe max speed loss", 0, 200, 1, mt)
+	AddElement(Slider, activetab, "CStrafe jobs", 1, 64, 0, mt)
+
+	local threadsSlider = AddElement(Slider, activetab, "CStrafe threads", 1, 64, 0, mt)
+	function threadsSlider:OnValueChanged(value)
+		samoware.SetThreadedSimulationThreads(value)
+		settings.Misc["CStrafe threads"] = value
+		self:SetValue(value)
+	end
+
+	AddElement(Slider, activetab, "CStrafe sim time", 0.1, 5, 1, mt)
+
 	AddElement(NamedCheckbox, activetab, "SimplAC safe mode", mt)
 	AddElement(NamedCheckbox, activetab, "Spectator memes", mt)
 	AddElement(ComboBox, activetab, "SpectatorMemeMode", {
@@ -1309,11 +1352,11 @@ local function OpenSettingsTab()
 		if IsValid(infopnl) then
 			infopnl:SetPos(infopos.x, infopos.y)
 		end
-		
+
 		if IsValid(bindspnl) then
 			bindspnl:SetPos(bindspos.x, bindspos.y)
 		end
-		
+
 		if IsValid(spectatorspnl) then
 			spectatorspnl:SetPos(spectatorspos.x, spectatorspos.y)
 		end
@@ -1415,7 +1458,7 @@ local function OpenMenu()
 	menupnl:SetSize(715, 520)
 	menupnl:SetPos(menupos.x, menupos.y)
 	menupnl:MakePopup()
-	
+
 	menupnl:SetKeyboardInputEnabled(false)
 
 	local tabbuttons = vgui.Create("DPanel", menupnl)
@@ -1500,7 +1543,7 @@ function OpenInfoPanel()
 	infopnl:SetDraggable(true)
 	infopnl:SetWide(245)
 	infopnl:SetPos(infopos.x, infopos.y)
-	
+
 	if settings.Visuals.Health then
 		local healthslider
 		healthslider = AddElement(VSlider, "Health", 0, 100, 0, function()
@@ -1508,12 +1551,12 @@ function OpenInfoPanel()
 			if healthslider:GetMax() != maxhealth then
 				healthslider:SetMax(maxhealth)
 			end
-			
+
 			return me:Health()
 		end, infopnl)
 		healthslider:SetWide(227)
 	end
-	
+
 	if settings.Visuals.Armor then
 		AddElement(VSlider, "Armor", 0, 100, 0, function() return me:Armor() end, infopnl):SetWide(227)
 	end
@@ -1529,7 +1572,7 @@ function OpenInfoPanel()
 	if settings.Visuals.RealPitch then
 		AddElement(VSlider, "Real pitch", -90, 90, 2, function() return bSendPacket and fakeangles.p or realangles.p end, infopnl):SetWide(227)
 	end
-	
+
 	if settings.Visuals.Chokes then
 		AddElement(VSlider, "Chokes", 0, 14, 2, function() return chokes end, infopnl):SetWide(227)
 	end
@@ -1538,29 +1581,29 @@ function OpenInfoPanel()
 	if settings.Visuals.Speed then
 		AddElement(VSlider, "Speed", 0, maxvel, 2, function() return me:GetVelocity():Length() end, infopnl):SetWide(227)
 	end
-	
+
 	if settings.Visuals.FPS then
 		local fpsslider
 		fpsslider = AddElement(VSlider, "FPS", 0, infopnl_maxfps, 0, function()
 			local frametime = RealFrameTime()
 			local fps = 1 / frametime
-			
+
 			if fps > infopnl_maxfps then
 				infopnl_maxfps = fps
 				fpsslider:SetMax(infopnl_maxfps)
 			end
-			
+
 			infopnl_fpslerped = Lerp(frametime * 7, infopnl_fpslerped, fps)
-			
+
 			return infopnl_fpslerped
 		end, infopnl)
 		fpsslider:SetWide(227)
 	end
-	
+
 	if settings.Visuals.Ping then
 		AddElement(VSlider, "Ping", 0, 1000, 1, function() return me:Ping() end, infopnl):SetWide(227)
 	end
-	
+
 	if settings.Visuals.NumEntities then
 		AddElement(VSlider, "NumEntities", 0, 3000, 0, function() return #ents.GetAll() end, infopnl):SetWide(227)
 	end
@@ -1587,7 +1630,7 @@ end
 
 local function AddActiveBind(tab, name)
 	if !IsValid(bindspnl) or (bindsactive[tab] and bindsactive[tab][name]) then return end
-	
+
 	local mode = settings[tab][name].mode
 	if mode == "Always" then return end
 	if mode == "Toggle" then
@@ -1595,30 +1638,30 @@ local function AddActiveBind(tab, name)
 	elseif mode == "Hold" or mode == "Press" then
 		mode = mode .. "ing"
 	end
-	
+
 	bindsactive[tab] = bindsactive[tab] or {}
-	
+
 	local label = vgui.Create("DLabel", bindspnl)
 	label:Dock(TOP)
 	label:DockMargin(4, 0, 0, 0)
 	label:SetText(("%s %s [%s]"):format(tab, name, mode:upper()))
-	
+
 	InitLabel(tab, name, label)
-	
+
 	bindsactive[tab][name] = label
-	
+
 	ResizePanel(bindspnl)
 end
 
 local function RemoveActiveBind(tab, name)
 	if !IsValid(bindspnl) or (!bindsactive[tab] or !bindsactive[tab][name]) then return end
-	
+
 	local bind = bindsactive[tab][name]
-	
+
 	if IsValid(bind) then
 		bind:Remove()
 		bindsactive[tab][name] = nil
-		
+
 		ResizePanel(bindspnl)
 	end
 end
@@ -1649,28 +1692,28 @@ local spectators = {}
 
 local function AddSpectator(ply)
 	if !IsValid(spectatorspnl) or spectators[ply] then return end
-	
+
 	local label = vgui.Create("DLabel", bindspnl)
 	label:Dock(TOP)
 	label:DockMargin(4, 0, 0, 0)
 	label:SetText(("%s %s"):format(ply:Nick(), ply:GetUserGroup()))
-	
+
 	InitLabel(nil, nil, label)
-	
+
 	spectators[ply] = label
-	
+
 	ResizePanel(spectatorspnl)
 end
 
 local function RemoveSpectator(ply)
 	if !IsValid(spectatorspnl) or !spectators[ply] then return end
-	
+
 	local spectator = spectators[ply]
-	
+
 	if IsValid(spectator) then
 		spectator:Remove()
 		spectators[ply] = nil
-		
+
 		ResizePanel(spectatorspnl)
 	end
 end
@@ -1710,14 +1753,14 @@ do
 function NewFakeModel(ply, group)
 	local model = ClientsideModel(ply:GetModel(), group)
 	model:SetNoDraw(true)
-	
+
 	local data = {
 		model = model,
 		ply = ply
 	}
-	
+
 	fakemodels[#fakemodels + 1] = data
-	
+
 	return data
 end
 
@@ -1731,42 +1774,42 @@ end
 function UpdateFakeModel(model, angles)
 	local mdl = model.model
 	local ply = model.ply
-	
+
 	local ang
 	if angles then
 		ang = angles
-		
+
 		mdl:SetPoseParameter("aim_pitch", ang.p)
 		mdl:SetPoseParameter("head_pitch", ang.p)
 		mdl:SetPoseParameter("body_yaw", ang.y)
 		mdl:SetPoseParameter("aim_yaw", 0)
-		
+
 		-- Fix legs
 		local velocity = ply:GetVelocity()
 		local velocityYaw = mNormalizeAng(ang.y - math.deg(math.atan2(velocity.y, velocity.x)))
 		local playbackRate = ply:GetPlaybackRate()
 		local moveX = math.cos(math.rad(velocityYaw)) * playbackRate
 		local moveY = -math.sin(math.rad(velocityYaw)) * playbackRate
-		
+
 		mdl:SetPoseParameter("move_x", moveX)
 		mdl:SetPoseParameter("move_y", moveY)
 	else
 		local lby = samoware.GetCurrentLBY(ply:EntIndex())
 		ang = Angle(0, lby, 0)
-		
+
 		for i = 0, ply:GetNumPoseParameters() - 1 do
 			local name = ply:GetPoseParameterName(i)
 			CopyPoseParam(name, ply, mdl)
 		end
 	end
-	
+
 	mdl:SetPos(ply:GetPos())
-	
+
 	mdl:SetAngles(Angle(0, ang.y, 0))
-	
+
 	mdl:SetCycle(ply:GetCycle())
 	mdl:SetSequence(ply:GetSequence())
-	
+
 	mdl:InvalidateBoneCache()
 end
 
@@ -1794,9 +1837,9 @@ local hook_Remove = hook.Remove
 
 local function Unload()
 	print("Unloading...")
-	
+
 	_R.bSendPacket = true
-	
+
 	for k,v in pairs(hook.GetTable()) do
 		for k1, v1 in pairs(v) do
 			if tostring(k1):StartWith("GM_") then
@@ -1805,11 +1848,10 @@ local function Unload()
 			end
 		end
 	end
-	
+
 	GAMEMODE.CreateMove = origCreateMove
-	
+
 	-- Remove samoware hooks
-	samoware.RemoveHook("OverrideCreateMove", "samoware")
 	samoware.RemoveHook("PostFrameStageNotify", "samoware")
 
 	for k, v in ipairs(fakemodels) do
@@ -1833,11 +1875,11 @@ local function Unload()
 	if IsValid(infopnl) then
 		infopnl:Remove()
 	end
-	
+
 	if IsValid(bindspnl) then
 		bindspnl:Remove()
 	end
-	
+
 	if IsValid(spectatorspnl) then
 		spectatorspnl:Remove()
 	end
@@ -1869,12 +1911,12 @@ AddHook("Think", function()
 		local x, y = infopnl:GetPos()
 		infopos = {x=x, y=y}
 	end
-	
+
 	if IsValid(bindspnl) then
 		local x, y = bindspnl:GetPos()
 		bindspos = {x=x, y=y}
 	end
-	
+
 	if IsValid(spectatorspnl) then
 		local x, y = spectatorspnl:GetPos()
 		spectatorspos = {x=x, y=y}
@@ -1903,10 +1945,10 @@ AddHook("Think", function()
 	else
 		CloseInfoPanel()
 	end
-	
+
 	if settings.Visuals.Binds then
 		OpenBindsPanel()
-		
+
 		if IsValid(menupnl) then
 			bindspnl:SetMouseInputEnabled(true)
 		else
@@ -1915,16 +1957,16 @@ AddHook("Think", function()
 	else
 		CloseBindsPanel()
 	end
-	
+
 	if settings.Visuals.Spectators then
 		OpenSpectatorsPanel()
-		
+
 		if IsValid(menupnl) then
 			spectatorspnl:SetMouseInputEnabled(true)
 		else
 			spectatorspnl:SetMouseInputEnabled(false)
 		end
-		
+
 		for k, v in ipairs(player.GetAll()) do
 			if v:GetObserverMode() != OBS_MODE_NONE and v:GetObserverTarget() == me then
 				AddSpectator(v)
@@ -1945,136 +1987,137 @@ do
 	local tickrate = tostring(math.Round(1 / engine.TickInterval()))
 	RunConsoleCommand("cl_cmdrate", tickrate)
 	RunConsoleCommand("cl_updaterate", tickrate)
-	
+
 	RunConsoleCommand("cl_interp", "0")
 	RunConsoleCommand("cl_interp_ratio", "0")
 end
 
-local function VelPredict(vec, ply)
+local VelPredict, IsVisible
+do
+
+function VelPredict(vec, ply)
 	local mode = settings.Aimbot.Prediction
-	
+
 	if mode == "None" then return vec end
-	
+
 	local lvel, tvel = me:GetVelocity(), ply:GetVelocity()
-	
+
 	if mode == "Engine" then
 		return tvel == vector_origin and vec or vec + tvel * TICK_INTERVAL * RealFrameTime() - lvel * TICK_INTERVAL
 	end
-	
+
 	if mode == "EngineC" then
 		return vec + (tvel / 45 - lvel / 45)
 	end
-	
+
 	if mode == "VelBase" then
 		return vec + ((lvel - tvel) * (RealFrameTime() / (1 / TICK_INTERVAL)))
 	end
-	
+
 	if mode == "Classic" then
 		return vec - (lvel * TICK_INTERVAL)
 	end
 end
 
+-- Cached trace struct, used in AutoWall and IsVisible
+local traceStruct = {
+	mask = MASK_SHOT,
+	filter = me
+}
+
 local function AutoWall(dir, plyTarget)
 	local weap = me:GetActiveWeapon()
 	if !IsValid(weap) then return false end
-	
+
 	local class = weap:GetClass()
 	local eyePos = me:EyePos()
-	
+
 	local function CW2Autowall()
 		local normalmask = bor(CONTENTS_SOLID, CONTENTS_OPAQUE, CONTENTS_MOVEABLE, CONTENTS_DEBRIS, CONTENTS_MONSTER, CONTENTS_HITBOX, 402653442, CONTENTS_WATER)
 		local wallmask = bor(CONTENTS_TESTFOGVOLUME, CONTENTS_EMPTY, CONTENTS_MONSTER, CONTENTS_HITBOX)
-		
-		local tr = TraceLine({
-			start = eyePos,
-			endpos = eyePos + dir * weap.PenetrativeRange,
-			filter = me,
-			mask = normalmask
-		})
-		
+
+		traceStruct.start = eyePos
+		traceStruct.endpos = eyePos + dir * weap.PenetrativeRange
+		traceStruct.mask = normalmask
+
+		local tr = TraceLine(traceStruct)
+
 		if tr.Hit and !tr.HitSky then
 			local canPenetrate, dot = weap:canPenetrate(tr, dir)
-			
+
 			if canPenetrate and dot > 0.26 then
-				tr = TraceLine({
-					start = tr.HitPos,
-					endpos = tr.HitPos + dir * weap.PenStr * (weap.PenetrationMaterialInteraction[tr.MatType] or 1) * weap.PenMod,
-					filter = me,
-					mask = wallmask
-				})
-				
-				tr = TraceLine({
-					start = tr.HitPos,
-					endpos = tr.HitPos + dir * 0.1,
-					filter = me,
-					mask = normalmask
-				}) -- run ANOTHER trace to check whether we've penetrated a surface or not
-				
+				traceStruct.start = tr.HitPos
+				traceStruct.endpos = tr.HitPos + dir * weap.PenStr * (weap.PenetrationMaterialInteraction[tr.MatType] or 1) * weap.PenMod
+				traceStruct.mask = wallmask
+				tr = TraceLine(traceStruct)
+
+				traceStruct.start = tr.HitPos
+				traceStruct.endpos = tr.HitPos + dir * 0.1
+				traceStruct.mask = normalmask
+				tr = TraceLine(traceStruct) -- run ANOTHER trace to check whether we've penetrated a surface or not
+
 				if tr.Hit then return false end
-				
+
 				-- FireBullets
-				tr = TraceLine({
-					start = tr.HitPos,
-					endpos = tr.HitPos + dir * 32768,
-					filter = me,
-					mask = MASK_SHOT
-				})
-				
+				traceStruct.start = tr.HitPos
+				traceStruct.endpos = tr.HitPos + dir * 32768
+				traceStruct.mask = MASK_SHOT
+				tr = TraceLine(traceStruct)
+
+				if settings.Aimbot["Force head"] then
+					return tr.Entity == plyTarget and tr.HitGroup == HITGROUP_HEAD
+				end
+
 				return tr.Entity == plyTarget
 			end
 		end
-		
+
 		return false
 	end
-	
+
 	local function SWBAutowall()
 		local normalmask = bor(CONTENTS_SOLID, CONTENTS_OPAQUE, CONTENTS_MOVEABLE, CONTENTS_DEBRIS, CONTENTS_MONSTER, CONTENTS_HITBOX, 402653442, CONTENTS_WATER)
 		local wallmask = bor(CONTENTS_TESTFOGVOLUME, CONTENTS_EMPTY, CONTENTS_MONSTER, CONTENTS_HITBOX)
 		local penMod = {[MAT_SAND] = 0.5, [MAT_DIRT] = 0.8, [MAT_METAL] = 1.1, [MAT_TILE] = 0.9, [MAT_WOOD] = 1.2}
-		
-		
-		local tr = TraceLine({
-			start = eyePos,
-			endpos = eyePos + dir * weap.PenetrativeRange,
-			filter = me,
-			mask = normalmask
-		})
-		
+
+		traceStruct.start = eyePos
+		traceStruct.endpos = eyePos + dir * weap.PenetrativeRange
+		traceStruct.mask = normalmask
+		local tr = TraceLine(traceStruct)
+
 		if tr.Hit and !tr.HitSky then
 			local dot = -dir:Dot(tr.HitNormal)
-			
+
 			if weap.CanPenetrate and dot > 0.26 then
-				tr = TraceLine({
-					start = tr.HitPos,
-					endpos = tr.HitPos + dir * weap.PenStr * (penMod[tr.MatType] or 1) * weap.PenMod,
-					filter = me,
-					mask = wallmask
-				})
-				
-				tr = TraceLine({
-					start = tr.HitPos,
-					endpos = tr.HitPos + dir * 0.1,
-					filter = me,
-					mask = normalmask
-				}) -- run ANOTHER trace to check whether we've penetrated a surface or not
-				
+				traceStruct.start = tr.HitPos
+				traceStruct.endpos = tr.HitPos + dir * weap.PenStr * (penMod[tr.MatType] or 1) * weap.PenMod
+				traceStruct.mask = wallmask
+				tr = TraceLine(traceStruct)
+
+				traceStruct.start = tr.HitPos
+				traceStruct.endpos = tr.HitPos + dir * 0.1
+				traceStruct.mask = normalmask
+				tr = TraceLine(traceStruct) -- run ANOTHER trace to check whether we've penetrated a surface or not
+
 				if tr.Hit then return false end
-				
+
 				-- FireBullets
-				tr = TraceLine({
-					start = tr.HitPos,
-					endpos = tr.HitPos + dir * 32768,
-					filter = me,
-					mask = MASK_SHOT
-				})
-				
+				traceStruct.start = tr.HitPos
+				traceStruct.endpos = tr.HitPos + dir * 32768
+				traceStruct.mask = MASK_SHOT
+				tr = TraceLine(traceStruct)
+
+				if settings.Aimbot["Force head"] then
+					return tr.Entity == plyTarget and tr.HitGroup == HITGROUP_HEAD
+				end
+
 				return tr.Entity == plyTarget
 			end
 		end
-		
+
 		return false
 	end
-	
+
 	local function M9KAutowall()
 		if !weap.Penetration then
 			return false
@@ -2084,28 +2127,29 @@ local function AutoWall(dir, plyTarget)
 			if damage < 1 then
 				return false
 			end
-			
+
 			local maxPenetration = 14
-			if weap.Primary.Ammo == "SniperPenetratedRound" then -- .50 Ammo
+			local primaryAmmo = weap.Primary.Ammo
+			if primaryAmmo == "SniperPenetratedRound" then -- .50 Ammo
 				maxPenetration = 20
-			elseif weap.Primary.Ammo == "pistol" then -- pistols
+			elseif primaryAmmo == "pistol" then -- pistols
 				maxPenetration = 9
-			elseif weap.Primary.Ammo == "357" then -- revolvers with big ass bullets
+			elseif primaryAmmo == "357" then -- revolvers with big ass bullets
 				maxPenetration = 12
-			elseif weap.Primary.Ammo == "smg1" then -- smgs
+			elseif primaryAmmo == "smg1" then -- smgs
 				maxPenetration = 14
-			elseif weap.Primary.Ammo == "ar2" then -- assault rifles
+			elseif primaryAmmo == "ar2" then -- assault rifles
 				maxPenetration = 16
-			elseif weap.Primary.Ammo == "buckshot" then -- shotguns
+			elseif primaryAmmo == "buckshot" then -- shotguns
 				maxPenetration = 5
-			elseif weap.Primary.Ammo == "slam" then -- secondary shotguns
+			elseif primaryAmmo == "slam" then -- secondary shotguns
 				maxPenetration = 5
-			elseif weap.Primary.Ammo == "AirboatGun" then -- metal piercing shotgun pellet
+			elseif primaryAmmo == "AirboatGun" then -- metal piercing shotgun pellet
 				maxPenetration = 17
 			end
 
 			local isRicochet = false
-			if weap.Primary.Ammo == "pistol" or weap.Primary.Ammo == "buckshot" or weap.Primary.Ammo == "slam" then
+			if primaryAmmo == "pistol" or primaryAmmo == "buckshot" or primaryAmmo == "slam" then
 				isRicochet = true
 			else
 				/*
@@ -2117,30 +2161,30 @@ local function AutoWall(dir, plyTarget)
 				end*/
 			end
 
-			if weap.Primary.Ammo == "SniperPenetratedRound" then
+			if primaryAmmo == "SniperPenetratedRound" then
 				isRicochet = true
 			end
 
 			local maxRicochet = 0
-			if weap.Primary.Ammo == "SniperPenetratedRound" then -- .50 Ammo
+			if primaryAmmo == "SniperPenetratedRound" then -- .50 Ammo
 				maxRicochet = 10
-			elseif weap.Primary.Ammo == "pistol" then -- pistols
+			elseif primaryAmmo == "pistol" then -- pistols
 				maxRicochet = 2
-			elseif weap.Primary.Ammo == "357" then -- revolvers with big ass bullets
+			elseif primaryAmmo == "357" then -- revolvers with big ass bullets
 				maxRicochet = 5
-			elseif weap.Primary.Ammo == "smg1" then -- smgs
+			elseif primaryAmmo == "smg1" then -- smgs
 				maxRicochet = 4
-			elseif weap.Primary.Ammo == "ar2" then -- assault rifles
+			elseif primaryAmmo == "ar2" then -- assault rifles
 				maxRicochet = 5
-			elseif weap.Primary.Ammo == "buckshot" then -- shotguns
+			elseif primaryAmmo == "buckshot" then -- shotguns
 				maxRicochet = 0
-			elseif weap.Primary.Ammo == "slam" then -- secondary shotguns
+			elseif primaryAmmo == "slam" then -- secondary shotguns
 				maxRicochet = 0
-			elseif weap.Primary.Ammo == "AirboatGun" then -- metal piercing shotgun pellet
+			elseif primaryAmmo == "AirboatGun" then -- metal piercing shotgun pellet
 				maxRicochet = 8
 			end
 
-			if tr.MatType == MAT_METAL and isRicochet and weap.Primary.Ammo != "SniperPenetratedRound" then
+			if tr.MatType == MAT_METAL and isRicochet and primaryAmmo != "SniperPenetratedRound" then
 				return false
 			end
 
@@ -2157,27 +2201,27 @@ local function AutoWall(dir, plyTarget)
 				return false
 			end
 
-			local trace = {}
-			trace.endpos = tr.HitPos
-			trace.start = tr.HitPos + penetrationDir
-			trace.mask = MASK_SHOT
-			trace.filter = me
-
-			local trace = TraceLine(trace)
+			traceStruct.start = tr.HitPos + penetrationDir
+			traceStruct.endpos = tr.HitPos
+			traceStruct.mask = MASK_SHOT
+			local trace = TraceLine(traceStruct)
 
 			if trace.StartSolid or trace.Fraction >= 1 then
 				return false
 			end
 
-			local penTrace = {}
-			penTrace.endpos = trace.HitPos + tr.Normal * 32768
-			penTrace.start = trace.HitPos
-			penTrace.mask = MASK_SHOT
-			penTrace.filter = me
+			traceStruct.start = trace.HitPos
+			traceStruct.endpos = trace.HitPos + tr.Normal * 32768
+			traceStruct.mask = MASK_SHOT
+			penTrace = TraceLine(traceStruct)
 
-			penTrace = TraceLine(penTrace)
-
-			if penTrace.Entity == plyTarget then return true end
+			if settings.Aimbot["Force head"] then
+				return penTrace.Entity == plyTarget and penTrace.HitGroup == HITGROUP_HEAD
+			else
+				if penTrace.Entity == plyTarget then
+					return true
+				end
+			end
 
 			local damageMulti = 0.5
 			if weap.Primary.Ammo == "SniperPenetratedRound" then
@@ -2189,7 +2233,7 @@ local function AutoWall(dir, plyTarget)
 			elseif tr.MatType == MAT_FLESH or tr.MatType == MAT_ALIENFLESH then
 				damageMulti = 0.9
 			end
-			
+
 			if penTrace.MatType == MAT_GLASS then
 				bounceNum = bounceNum - 1
 			end
@@ -2197,16 +2241,14 @@ local function AutoWall(dir, plyTarget)
 			return BulletPenetrate(penTrace, bounceNum + 1, damage * damageMulti)
 		end
 
-		local trace = TraceLine({
-			start = eyePos,
-			endpos = eyePos + dir * 32768,
-			filter = me,
-			mask = MASK_SHOT
-		})
+		traceStruct.start = eyePos
+		traceStruct.endpos = eyePos + dir * 32768
+		traceStruct.mask = MASK_SHOT
+		local trace = TraceLine(traceStruct)
 
 		return BulletPenetrate(trace, 0, weap.Primary.Damage)
 	end
-	
+
 	if class:StartWith("cw_") then
 		return CW2Autowall()
 	elseif class:StartWith("m9k_") then
@@ -2214,34 +2256,176 @@ local function AutoWall(dir, plyTarget)
 	elseif class:StartWith("swb_") then
 		return SWBAutowall()
 	end
-	
+
 	return false
 end
 
-local function IsVisible(pos, ply, extrselfticks, autowalldir)
+function IsVisible(pos, ply, extrselfticks, autowalldir)
 	local start = me:EyePos()
 	if extrselfticks then
 		start = start + (me:GetVelocity() * TICK_INTERVAL) * extrselfticks
 	end
-	
-	local tr = TraceLine({
-		start = start,
-		endpos = pos,
-		mask = MASK_SHOT,
-		filter = me
-	})
-	
+
+	traceStruct.start = start
+	traceStruct.endpos = pos
+	traceStruct.mask = MASK_SHOT
+
+	local tr = TraceLine(traceStruct)
+
 	local visible = tr.Entity == ply or tr.Fraction == 1
 	if !visible and autowalldir and settings.Aimbot.Autowalls then
 		return AutoWall(autowalldir, ply)
 	end
-	
+
+	if settings.Aimbot["Force head"] then
+		return tr.HitGroup == HITGROUP_HEAD
+	end
+
 	return visible
 end
 
-local GetBone
+end
+
+local GetBone, FindBone
 
 do
+/*--------------JIT VECTOR & ANGLE--------------*/
+local function JitVector(x, y, z)
+	return {x = x, y = y, z = z}
+end
+
+local function JitAngle(p, y, r)
+	return {p = p, y = y, r = r}
+end
+
+local function JitVector_ToEngine(vec)
+	return Vector(vec.x, vec.y, vec.z)
+end
+
+local function JitVector_Copy(vec)
+	return JitVector(vec.x, vec.y, vec.z)
+end
+
+local function JitVector_Add(vec1, vec2)
+	return JitVector(vec1.x + vec2.x, vec1.y + vec2.y, vec1.z + vec2.z)
+end
+
+local function JitVector_Sub(vec1, vec2)
+	return JitVector(vec1.x - vec2.x, vec1.y - vec2.y, vec1.z - vec2.z)
+end
+
+local function JitVector_AddInPlace(dest, src)
+	dest.x = dest.x + src.x
+	dest.y = dest.y + src.y
+	dest.z = dest.z + src.z
+	return dest
+end
+
+local function JitVector_SubInPlace(dest, src)
+	dest.x = dest.x - src.x
+	dest.y = dest.y - src.y
+	dest.z = dest.z - src.z
+	return dest
+end
+
+local function JitVector_Extend(vec, value)
+	return JitVector(vec.x * value, vec.y * value, vec.z * value)
+end
+
+local function JitVector_ExtendInPlace(vec, value)
+	vec.x = vec.x * value
+	vec.y = vec.y * value
+	vec.z = vec.z * value
+	return vec
+end
+
+local function JitVector_Length2D(vec)
+	return math.sqrt(vec.x * vec.x + vec.y * vec.y)
+end
+
+local function JitVector_DistToSqr(vec1, vec2)
+	local dx = vec1.x - vec2.x
+	local dy = vec1.y - vec2.y
+	local dz = vec1.z - vec2.z
+	return dx * dx + dy * dy + dz * dz
+end
+
+local function JitVector_Distance(vec1, vec2)
+	return math.sqrt(JitVector_DistToSqr(vec1, vec2))
+end
+
+local function JitVector_Angle(vec)
+	local angle = JitAngle(0, 0, 0)
+
+	if vec.y == 0 and vec.x == 0 then
+		angle.y = 0
+
+		if vec.z > 0 then
+			angle.p = 270
+		else
+			angle.p = 90
+		end
+	else
+		angle.y = math.deg(math.atan2(vec.y, vec.x))
+		if angle.y < 0 then
+			angle.y = angle.y + 360
+		end
+
+		angle.p = math.deg(math.atan2(-vec.z, JitVector_Length2D(vec)))
+		if angle.p < 0 then
+			angle.p = angle.p + 360
+		end
+	end
+
+	return angle
+end
+
+local function JitAngle_Copy(angle)
+	return JitAngle(angle.p, angle.y, angle.r)
+end
+
+local function JitAngle_ToEngine(angle)
+	return Angle(angle.p, angle.y, angle.r)
+end
+
+local function JitAngle_Forward(angle)
+	local radp = math.rad(angle.p)
+	local rady = math.rad(angle.y)
+
+	local sp, cp = math.sin(radp), math.cos(radp)
+	local sy, cy = math.sin(rady), math.cos(rady)
+
+	return JitVector(cp * cy, cp * sy, -sp)
+end
+
+local function JitAngle_Right(angle)
+	local radp = math.rad(angle.p)
+	local rady = math.rad(angle.y)
+	local radr = math.rad(angle.r)
+
+	local sp, cp = math.sin(radp), math.cos(radp)
+	local sy, cy = math.sin(rady), math.cos(rady)
+	local sr, cr = math.sin(radr), math.cos(radr)
+
+	return JitVector(-1 * sr * sp * cy + -1 * cr * -sy,
+					-1 * sr * sp * sy + -1 * cr * cy,
+					-1 * sr * cp)
+end
+
+local function JitAngle_Up(angle)
+	local radp = math.rad(angle.p)
+	local rady = math.rad(angle.y)
+	local radr = math.rad(angle.r)
+
+	local sp, cp = math.sin(radp), math.cos(radp)
+	local sy, cy = math.sin(rady), math.cos(rady)
+	local sr, cr = math.sin(radr), math.cos(radr)
+
+	return JitVector(cr * sp * cy + -sr * -sy,
+					cr * sp * sy + -sr * cy,
+					cr * sp)
+end
+/*--------------JIT VECTOR & ANGLE--------------*/
 
 local bones = {
 	["Head"] = "ValveBiped.Bip01_Head1",
@@ -2251,12 +2435,12 @@ local bones = {
 }
 
 local fixedBoneCache = {}
-local function FindBone(ply, name)
+function FindBone(ply, name)
 	if fixedBoneCache[ply] and fixedBoneCache[ply][name] then
 		return fixedBoneCache[ply][name]
 	end
 
-	local boneid = ply:LookupBone(bones[name])
+	local boneid = ply:LookupBone(bones[name] or name)
 	if !boneid then
 		if !fixedBoneCache[ply] then
 			fixedBoneCache[ply] = {}
@@ -2311,7 +2495,7 @@ local function GetBoneRanking(ply, tbl, bone)
 	if rankingCache[boneName] then
 		return rankingCache[boneName]
 	end
-	
+
 	for i = 1, #tbl do
 		local name = tbl[i]
 		if boneName:find(name, 1, true) then
@@ -2319,60 +2503,135 @@ local function GetBoneRanking(ply, tbl, bone)
 			return i
 		end
 	end
-	
+
 	return 1000
 end
 
-function GetBone(ply, modeoverride, boneoverride)
-	local boneid = FindBone(ply, boneoverride and boneoverride or settings.Aimbot.Bone)
-	if !boneid then
+-- JITTED
+local function InsertMultiPoint(outTbl, boneId, boneCenter, boneAng, boneSize)
+	if !settings.Aimbot.MultiPoint then
+		outTbl[#outTbl + 1] = {boneId, boneCenter, boneSize}
+		return
+	end
+
+	outTbl[#outTbl + 1] = {boneId, boneCenter, boneSize}
+
+	local factor = settings.Aimbot.MultiPointFactor * msqrt(boneSize) / msqrt(2) / 2
+	local forward, right, up = JitAngle_Forward(boneAng), JitAngle_Right(boneAng), JitAngle_Up(boneAng)
+	--boneAng:Up(), boneAng:Forward(), boneAng:Right()
+
+	local positions = {
+		JitVector_Add(boneCenter, JitVector_Extend(up, factor)),
+		JitVector_Sub(boneCenter, JitVector_Extend(up, factor)),
+
+		JitVector_Add(boneCenter, JitVector_Extend(forward, factor)),
+		JitVector_Sub(boneCenter, JitVector_Extend(forward, factor)),
+
+		JitVector_Add(boneCenter, JitVector_Extend(right, factor)),
+		JitVector_Sub(boneCenter, JitVector_Extend(right, factor)),
+	}
+
+	for i = 1, 6 do
+		local pos = positions[i]
+		outTbl[#outTbl + 1] = {
+			boneId,
+			pos,
+			JitVector_DistToSqr(pos, boneCenter) --pos:DistToSqr(boneCenter)
+		}
+	end
+end
+
+function GetBone(ply, modeOverride, boneOverride)
+	local boneId = FindBone(ply, boneOverride and boneOverride or settings.Aimbot.Bone)
+	if !boneId then
 		-- Select random bone
 		local numBones = ply:GetBoneCount()
-		boneid = mrandom(0, numBones - 1)
+		boneId = mrandom(0, numBones - 1)
 	end
 
 	local min, max = ply:GetHitBoxBounds(0, 0)
 	if !min or !max then
-		return {ply:GetBonePosition(boneid)}
+		return {ply:GetBonePosition(boneId)}
 	end
-	
-	local bone, ang = ply:GetBonePosition(boneid)
+
+	local bone, ang = ply:GetBonePosition(boneId)
 	min:Rotate(ang)
 	max:Rotate(ang)
-	
+
 	local pos = bone + ((min + max) * 0.5)
 
-	local mode = modeoverride or settings.Aimbot.BoneMode
+	local mode = modeOverride or settings.Aimbot.BoneMode
 	if mode == "Center" then
-		local mat = ply:GetBoneMatrix(boneid)
-		
-		if mat then
-			return {VelPredict(mat:GetTranslation(), ply)}
+		local boneMat = ply:GetBoneMatrix(boneId)
+
+		if boneMat then
+			local bonePos, boneAng = boneMat:GetTranslation(), boneMat:GetAngles()
+
+			-- Find bone hitbox
+			local multiPointResult = {}
+			for hitboxSet = 0, ply:GetHitboxSetCount() - 1 do
+				for hitbox = 0, ply:GetHitBoxCount(hitboxSet) - 1 do
+					local hitboxBoneId = ply:GetHitBoxBone(hitbox, hitboxSet)
+					if boneId != hitboxBoneId then continue end
+
+					local mins, maxs = ply:GetHitBoxBounds(hitbox, hitboxSet)
+					local boneSize = JitVector_DistToSqr(maxs, mins)
+					mins:Rotate(boneAng)
+					maxs:Rotate(boneAng)
+
+					local boneCenterLocal = JitVector_AddInPlace(mins, maxs)
+					JitVector_ExtendInPlace(boneCenterLocal, 0.5)
+
+					local boneCenter = JitVector_AddInPlace(bonePos, boneCenterLocal)
+					boneCenter = VelPredict(boneCenter, ply)
+
+					InsertMultiPoint(multiPointResult, boneId, boneCenter, boneAng, boneSize)
+
+					-- Return only bone positions
+					for i = 1, #multiPointResult do
+						-- debugoverlay.Cross(multiPoints[i][2], 1, 0.1, color_white, true)
+						multiPointResult[i] = JitVector_ToEngine(multiPointResult[i][2])
+					end
+
+					return multiPointResult
+				end
+			end
+
+			multiPointResult[1] = VelPredict(bonePos, ply)
+
+			return multiPointResult
 		end
 	elseif mode == "HitScan" then
 		local bones = {}
 		for hitboxSet = 0, ply:GetHitboxSetCount() - 1 do
 			for hitbox = 0, ply:GetHitBoxCount(hitboxSet) - 1 do
-				local bone = ply:GetHitBoxBone(hitbox, hitboxSet)
-				local bonePos, ang = ply:GetBonePosition(bone)
-				local min, max = ply:GetHitBoxBounds(hitbox, hitboxSet)
-				min:Rotate(ang)
-				max:Rotate(ang)
-				pos = bonePos + ((min + max) * 0.5)
-				pos = VelPredict(pos, ply)
-				
-				local boneSize = min:DistToSqr(max)
-				
-				bones[#bones + 1] = {bone, pos, boneSize}
+				local boneId = ply:GetHitBoxBone(hitbox, hitboxSet)
+				local boneMat = ply:GetBoneMatrix(boneId)
+				if !boneMat then continue end
+
+				local bonePos, boneAng = boneMat:GetTranslation(), boneMat:GetAngles()
+				local mins, maxs = ply:GetHitBoxBounds(hitbox, hitboxSet)
+				local boneSize = JitVector_DistToSqr(maxs, mins)
+
+				mins:Rotate(boneAng)
+				maxs:Rotate(boneAng)
+
+				local boneCenterLocal = JitVector_AddInPlace(mins, maxs)
+				JitVector_ExtendInPlace(boneCenterLocal, 0.5)
+
+				local boneCenter = JitVector_AddInPlace(bonePos, boneCenterLocal)
+				boneCenter = VelPredict(boneCenter, ply)
+
+				InsertMultiPoint(bones, boneId, boneCenter, boneAng, boneSize)
 			end
 		end
-		
+
 		local hitScanMode = settings.Aimbot.HitScanMode
 		if hitScanMode == "Damage" then
 			table.sort(bones, function(a, b)
 				local rankA = GetBoneRanking(ply, damageRanking, a[1])
 				local rankB = GetBoneRanking(ply, damageRanking, b[1])
-				
+
 				return rankA < rankB
 			end)
 		elseif hitScanMode == "Scale" then
@@ -2383,27 +2642,25 @@ function GetBone(ply, modeoverride, boneoverride)
 			table.sort(bones, function(a, b)
 				local rankA = GetBoneRanking(ply, safetyRanking, a[1])
 				local rankB = GetBoneRanking(ply, safetyRanking, b[1])
-				
+
 				return rankA < rankB
 			end)
 		end
-		
+
 		-- Return only bone positions
-		local bonesNew = {}
 		for i = 1, #bones do
-			bonesNew[i] = bones[i][2]
+			bones[i] = JitVector_ToEngine(bones[i][2])
 		end
-		
-		return bonesNew
+
+		return bones
 	end
 
-	return {pos}
+	return { pos }
 end
 
 end
 
 local GetPlayers
-local GetAimbotTarget
 
 do
 function GetPlayers(mode, extrselfticks, extrplyticks, checkvis)
@@ -2422,17 +2679,19 @@ function GetPlayers(mode, extrselfticks, extrplyticks, checkvis)
 		if settings.Aimbot["Ignore team"] and ply:Team() == me:Team() then continue end
 		if settings.Aimbot["Ignore friends"] and ply:GetFriendStatus() == "friend" then continue end
 		if settings.Aimbot["Ignore admins"] and ply:IsAdmin() then continue end
-		
+
 		if settings.Aimbot["Ignore legits"] then
 			local pitch = ply:EyeAngles().p
 			if pitch > -88 and pitch < 88 then continue end
 		end
-		
+
 		if checkvis then
 			local bone = GetBone(ply, "Center")[1]
 			if !bone then continue end
-			
-			if !IsVisible(bone, ply, extrselfticks, (me:GetShootPos() - bone):GetNormalized()) then
+
+			local dir = me:GetShootPos() - bone
+			dir:Normalize()
+			if !IsVisible(bone, ply, extrselfticks, dir) then
 				continue
 			end
 		end
@@ -2450,10 +2709,31 @@ function GetPlayers(mode, extrselfticks, extrplyticks, checkvis)
 			return (a[2] - selfpos):LengthSqr() < (b[2] - selfpos):LengthSqr()
 		end)
 	elseif mode == "Crosshair 2D" then
+		-- table.sort(tbl, function(a, b)
+		-- 	local as, bs = a[2]:ToScreen(), b[2]:ToScreen()
+		-- 	local sw, sh = SCRW * 0.5, SCRH * 0.5
+		-- 	return Vector(sw - as.x, sh - as.y, 0):LengthSqr() < Vector(sw - bs.x, sh - bs.y, 0):LengthSqr()
+		-- end)
+
+		local wCenter, hCenter = SCRW * 0.5, SCRH * 0.5
 		table.sort(tbl, function(a, b)
-			local as, bs = a[2]:ToScreen(), b[2]:ToScreen()
-			local sw, sh = SCRW * 0.5, SCRH * 0.5
-			return Vector(sw - as.x, sh - as.y, 0):LengthSqr() < Vector(sw - bs.x, sh - bs.y, 0):LengthSqr()
+			local aScr, bScr = a[2]:ToScreen(), b[2]:ToScreen()
+
+			local aDist
+			do
+				local dx = wCenter - aScr.x
+				local dy = hCenter - aScr.y
+				aDist = dx * dx + dy * dy
+			end
+
+			local bDist
+			do
+				local dx = wCenter - bScr.x
+				local dy = hCenter - bScr.y
+				bDist = dx * dx + dy * dy
+			end
+
+			return aDist < bDist
 		end)
 	elseif mode == "Crosshair" then
 		local hitpos = TraceLine({
@@ -2466,31 +2746,10 @@ function GetPlayers(mode, extrselfticks, extrplyticks, checkvis)
 			return (a[2] - hitpos):LengthSqr() < (b[2] - hitpos):LengthSqr()
 		end)
 	end
-	
+
 	if #tbl == 0 then return end
 
 	return tbl
-end
-
-function GetAimbotTarget()
-	local plys = GetPlayers(settings.Aimbot.Mode)
-	if !plys then return end
-	
-	for i = 1, #plys do
-		local ply = plys[i][1]
-		
-		local bones = GetBone(ply)
-		local bonePos
-		for i = 1, #bones do
-			bonePos = bones[i]
-			if !bonePos then continue end
-			
-			local aimAng = (bonePos - me:GetShootPos()):Angle()
-			if IsVisible(bonePos, ply, nil, aimAng:Forward()) then
-				return ply, aimAng
-			end
-		end
-	end
 end
 
 end
@@ -2527,8 +2786,8 @@ for tab, tbl in pairs(settings) do
 end
 
 function UpdateKeybinds()
-	if IsValid(menupnl) or gui.IsGameUIVisible() then return end
-	
+	if IsValid(menupnl) or gui.IsGameUIVisible() or vgui.GetKeyboardFocus() then return end
+
 	for k, v in ipairs(bindlisteners) do
 		local tab, name = v[1], v[2]
 		local data = settings[tab][name]
@@ -2558,11 +2817,11 @@ function UpdateKeybinds()
 				keystates[tab][name] = false
 				continue
 			end
-			
+
 			keystates[tab][name] = true
 			keybinds[tab][name] = true
 		end
-		
+
 		if keybinds[tab][name] then
 			AddActiveBind(tab, name)
 		else
@@ -2585,14 +2844,14 @@ function FixMove(cmd, aWishDir)
 	else
 		factor = c_sv_noclipspeed:GetFloat()
 	end
-	
+
 	if cmd:KeyDown(IN_SPEED) then
 		factor = factor * 0.5
 	end
-	
+
 	local aRealDir = cmd:GetViewAngles()
 	aRealDir:Normalize()
-	
+
 	local vRealF = aRealDir:Forward()
 	local vRealR = aRealDir:Right()
 	vRealF.z = 0
@@ -2600,9 +2859,9 @@ function FixMove(cmd, aWishDir)
 
 	vRealF:Normalize()
 	vRealR:Normalize()
-	
+
 	aWishDir:Normalize()
-	
+
 	local vWishF = aWishDir:Forward()
 	local vWishR = aWishDir:Right()
 	vWishF.z = 0
@@ -2610,22 +2869,22 @@ function FixMove(cmd, aWishDir)
 
 	vWishF:Normalize()
 	vWishR:Normalize()
-	
+
 	local forwardmove = cmd:GetForwardMove() * factor
 	local sidemove = cmd:GetSideMove() * factor
 	local upmove = cmd:GetUpMove() * factor
-	
+
 	local vWishVel = vWishF * forwardmove + vWishR * sidemove
 	vWishVel.z = vWishVel.z + upmove
-	
+
 	local a, b, c, d, e, f = vRealF.x, vRealR.x, vRealF.y, vRealR.y, vRealF.z, vRealR.z
 	local u, v, w = vWishVel.x, vWishVel.y, vWishVel.z
 	local flDivide = (b * c - a * d) * factor
-	
+
 	local x = -(d * u - b * v) / flDivide
 	local y = (c * u - a * v) / flDivide
 	local z = (a * (f * v - d * w) + b * (c * w - e * v) + u * (d * e - c * f)) / flDivide
-	
+
 	x = math.Clamp(x, -10000, 10000)
 	y = math.Clamp(y, -10000, 10000)
 	z = math.Clamp(z, -10000, 10000)
@@ -2639,16 +2898,16 @@ end
 
 local function UpdateSilentAngles(cmd)
 	local sensivity = 1.28
-	
+
 	local dx, dy = cmd:GetMouseX(), cmd:GetMouseY()
 	silentangles = silentangles or cmd:GetViewAngles()
 	silentangles.p = silentangles.p + dy * 0.023 * sensivity
 	silentangles.y = silentangles.y + dx * -0.023 * sensivity
-	
+
 	silentangles.p = mClamp(silentangles.p, -89, 89)
 	silentangles.y = silentangles.y % 360
 	silentangles.r = 0
-	
+
 	if cmd:CommandNumber() == 0 then return end
 	cmd:SetViewAngles(silentangles)
 end
@@ -2682,7 +2941,7 @@ local function CanShoot(cmd)
 	if settings.Aimbot.ShootDelay then
 		delay = settings.Aimbot.Delay / 1000
 	end
-	
+
 	return (GetServerTime(cmd) - delay) >= weap:GetNextPrimaryFire()
 end
 
@@ -2692,10 +2951,10 @@ local function PredictSpread(cmd, ang, spread)
 		local spreadDir = samoware.PredictSpread(cmd, ang, spread)
 		local newAngles = ang + spreadDir:Angle()
 		newAngles:Normalize()
-		
+
 		return newAngles
 	end
-	
+
 	return ang
 end
 
@@ -2703,19 +2962,19 @@ local weapcones = {}
 local function RemoveSpread(cmd, ang)
 	local weap = me:GetActiveWeapon()
 	local class = weap:GetClass()
-	
+
 	if class:StartWith("cw_") then
 		-- local memevec = Angle(0, cmd:CommandNumber() % 2 * 180, 0):Forward()
-		
+
 		local function CalculateSpread()
 			if not weap.AccuracyEnabled then
 				return
 			end
-			
+
 			local aim = ang:Forward()
 			local CT = CurTime()
 			local dt = TICK_INTERVAL --FrameTime()
-			
+
 			if !me.LastView then
 				me.LastView = aim
 				me.ViewAff = 0
@@ -2723,26 +2982,26 @@ local function RemoveSpread(cmd, ang)
 				me.ViewAff = LerpCW20(dt * 10, me.ViewAff, (aim - me.LastView):Length() * 0.5)
 				me.LastView = aim
 			end
-			
+
 			local baseCone, maxSpreadMod = weap:getBaseCone()
 			weap.BaseCone = baseCone
-			
+
 			if me:Crouching() then
 				weap.BaseCone = weap.BaseCone * weap:getCrouchSpreadModifier()
 			end
-			
+
 			weap.CurCone = weap:getFinalSpread(me:GetVelocity():Length2D(), maxSpreadMod)
-			
+
 			if CT > weap.SpreadWait then
 				weap.AddSpread = mClamp(weap.AddSpread - 0.5 * weap.AddSpreadSpeed * dt, 0, weap:getMaxSpreadIncrease(maxSpreadMod))
 				weap.AddSpreadSpeed = mClamp(weap.AddSpreadSpeed + 5 * dt, 0, 1)
 			end
 		end
-		
+
 		-- samoware.SetContextVector(cmd, memevec)
-		
+
 		CalculateSpread()
-		
+
 		local cone = weap.CurCone
 		if !cone then return ang end
 
@@ -2776,7 +3035,7 @@ local function RemoveSpread(cmd, ang)
 		local function CalculateSpread()
 			local vel = me:GetVelocity():Length()
 			local dir = ang:Forward()
-			
+
 			if !me.LastView then
 				me.LastView = dir
 				me.ViewAff = 0
@@ -2784,35 +3043,36 @@ local function RemoveSpread(cmd, ang)
 				me.ViewAff = Lerp(0.25, me.ViewAff, (dir - me.LastView):Length() * 0.5)
 				--  me.LastView = dir
 			end
-			
+
 			if weap.dt.State == SWB_AIMING then
 				weap.BaseCone = weap.AimSpread
-				
+
 				if weap.Owner.Expertise then
 					weap.BaseCone = weap.BaseCone * (1 - weap.Owner.Expertise["steadyaim"].val * 0.0015)
 				end
 			else
 				weap.BaseCone = weap.HipSpread
-				
+
 				if weap.Owner.Expertise then
 					weap.BaseCone = weap.BaseCone * (1 - weap.Owner.Expertise["wepprof"].val * 0.0015)
 				end
 			end
-			
+
 			if me:Crouching() then
 				weap.BaseCone = weap.BaseCone * (weap.dt.State == SWB_AIMING and 0.9 or 0.75)
 			end
-			
-			weap.CurCone = mClamp(weap.BaseCone + weap.AddSpread + (vel / 10000 * weap.VelocitySensitivity) * (weap.dt.State == SWB_AIMING and weap.AimMobilitySpreadMod or 1) + me.ViewAff, 0, 0.09 + weap.MaxSpreadInc)
-			
+
+			local curCone = weap.BaseCone + weap.AddSpread + (vel / 10000 * weap.VelocitySensitivity) * (weap.dt.State == SWB_AIMING and weap.AimMobilitySpreadMod or 1) + me.ViewAff
+			weap.CurCone = mClamp(curCone, 0, 0.09 + weap.MaxSpreadInc)
+
 			if CurTime() > weap.SpreadWait then
 				weap.AddSpread = mClamp(weap.AddSpread - 0.005 * weap.AddSpreadSpeed, 0, weap.MaxSpreadInc)
 				weap.AddSpreadSpeed = mClamp(weap.AddSpreadSpeed + 0.05, 0, 1)
 			end
 		end
-		
+
 		CalculateSpread()
-		
+
 		local cone = weap.CurCone
 		if !cone then return ang end
 
@@ -2826,7 +3086,7 @@ local function RemoveSpread(cmd, ang)
 		local spread = weapcones[class]
 		return PredictSpread(cmd, ang, spread)
 	end
-	
+
 	return ang
 end
 
@@ -2844,84 +3104,183 @@ local function RemoveRecoil(ang)
 end
 
 local function TIME_TO_TICKS(time)
-	return mfloor(0.5 + time / TICK_INTERVAL)
+	return math.floor(0.5 + time / TICK_INTERVAL)
+end
+
+local function TICKS_TO_TIME(ticks)
+	return ticks * TICK_INTERVAL
 end
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/gameinterface.cpp#L2844
 local function GetLerpTime()
 	if GetConVar("cl_interpolate"):GetInt() == 0 then return 0 end
-	
+
 	local lerpRatio = GetConVar("cl_interp_ratio"):GetFloat()
 	if lerpRatio == 0 then
 		lerpRatio = 1
 	end
-	
-	local lerpAmount = GetConVar("cl_interp"):GetFloat()
-	local updateRate = GetConVar("cl_updaterate"):GetFloat()
-	
-	return mmax(lerpAmount, lerpRatio / updateRate)
-end
 
-local function TIME_TO_TICKS(time)
-	return mfloor(0.5 + time / TICK_INTERVAL)
+	local lerpAmount = GetConVar("cl_interp"):GetFloat()
+	if samoware.GetManipulateInterp() then
+		lerpAmount = samoware.GetTargetInterp()
+	end
+
+	local updateRate = GetConVar("cl_updaterate"):GetFloat()
+
+	return mmax(lerpAmount, lerpRatio / updateRate)
 end
 
 local Aimbot
 
 do
 
+function GetAimbotTarget(cmd)
+	local plys = GetPlayers(settings.Aimbot.Mode)
+	if !plys then return end
+
+	if settings.HvH.Backshoot then
+		for i = 1, #plys do
+			local ply = plys[i][1]
+
+			-- TODO: IMPROVE THIS SHITCODE
+			if ply.sw_backshoot_data and ply.sw_prev_pos:DistToSqr(ply.sw_cur_pos) < 4096 then
+				local function canBacktrack()
+					local correct = samoware.GetLatency(0)
+					correct = correct + GetLerpTime()
+					if correct > 1 then
+						return false
+					end
+
+					local serverArriveTick = samoware.GetServerTime(cmd) + samoware.GetLatency(0) + samoware.GetLatency(1)
+					local diff = serverArriveTick - ply.sw_backshoot_data.simTime
+					if diff > settings.HvH.BacktrackAmount / 1000 then
+						return false
+					end
+
+					return true
+				end
+
+				if canBacktrack() then
+					-- Can backshoot
+					local aimAng = (ply.sw_backshoot_data.headPos - me:EyePos()):Angle()
+					local tr = TraceLine({
+						start = me:EyePos(),
+						endpos = ply.sw_backshoot_data.headPos,
+						filter = me,
+						mask = MASK_SHOT
+					})
+
+					if !tr.Hit or tr.Entity == ply then
+						return ply, aimAng, true
+					end
+				end
+			end
+		end
+	end
+
+	for i = 1, #plys do
+		local ply = plys[i][1]
+
+		local bones = GetBone(ply)
+		local bonePos
+		for j = 1, #bones do
+			bonePos = bones[j]
+
+			local aimAng = (bonePos - me:EyePos()):Angle()
+			if IsVisible(bonePos, ply, nil, aimAng:Forward()) then
+				return ply, aimAng, false
+			end
+		end
+	end
+end
+
 function Aimbot(cmd)
-	local aimPly, aimAngs = GetAimbotTarget()
+	local aimPly, aimAngs, isBackshoot = GetAimbotTarget(cmd)
 	aimply = aimPly
-	
+
+	if settings.HvH.ForceBackshoot and !isBackshoot then return false end
+
 	if !aimAngs then return false end
-	
+
 	aimAngs:Normalize()
-	
+
 	local angnocomp = Angle(aimAngs)
-	
+
 	if settings.Aimbot.FOV then
 		local fov = settings.Aimbot["FOV cone"]
-		
+
 		local view = settings.Aimbot.Silent and silentangles or cmd:GetViewAngles()
 		local ang = aimAngs - view
-		
+
 		ang:Normalize()
-		
+
 		ang = msqrt(ang.x * ang.x + ang.y * ang.y)
-		
+
 		if ang > fov then
 			return
 		end
 	end
-	
+
 	if settings.Aimbot.Nospread then
 		aimAngs = RemoveSpread(cmd, aimAngs)
 	end
-	
+
 	if settings.Aimbot.Norecoil then
 		aimAngs = RemoveRecoil(aimAngs)
 	end
-	
+
 	local weap = me:GetActiveWeapon():GetClass()
 	if !weap:StartWith("cw_") and !weap:StartWith("swb_") and settings.Aimbot["Invert on shot"] then
 		aimAngs = Angle(-aimAngs.p - 180, aimAngs.y + 180, 0)
 	end
-	
-	if settings.HvH.LagFix then
-		local simtime = samoware.GetSimulationTime(aimPly:EntIndex())
-		local tick = TIME_TO_TICKS(simtime + GetLerpTime())
-		samoware.SetCommandTick(cmd, tick)
+
+	if settings.HvH.Backshoot then
+		samoware.SetManipulateInterp(true)
+	else
+		samoware.SetManipulateInterp(false)
 	end
-	
+
+	if settings.HvH.LagFix then
+		if isBackshoot then
+			local targetTime = aimPly.sw_backshoot_data.simTime
+			local timeOffset = samoware.GetServerTime(cmd) - targetTime
+
+			-- Check if we can backtrack without cl_interp
+			local serverArriveTick = samoware.GetServerTime(cmd) + samoware.GetLatency(0) + samoware.GetLatency(1)
+			local diff = serverArriveTick - aimPly.sw_backshoot_data.simTime
+			if diff < 0.2 then
+				samoware.SetTargetInterp(0)
+				local tick = TIME_TO_TICKS(targetTime + GetLerpTime())
+				samoware.SetCommandTick(cmd, tick)
+			else
+				samoware.SetTargetInterp(samoware.GetServerTime(cmd) - targetTime)
+
+				local tick = TIME_TO_TICKS(samoware.GetServerTime(cmd))
+				samoware.SetCommandTick(cmd, tick - 1)
+			end
+		else
+			local simTime = samoware.GetSimulationTime(aimPly:EntIndex())
+
+			if settings.HvH.Forwardtrack then
+				local predTime = (samoware.GetLatency(0) + samoware.GetLatency(1)) * settings.HvH.ForwardtrackAmount
+				simTime = simTime + predTime
+			end
+
+			local tick = TIME_TO_TICKS(simTime + GetLerpTime())
+			samoware.SetCommandTick(cmd, tick)
+		end
+	end
+
 	aimPly.sw_aim_shots = (aimPly.sw_aim_shots or 0) + 1
-	
-	bSendPacket = true
-	
+
+	if !settings.HvH["FakeLag on shoot"] and (!settings.HvH.FakeDuck or !keybinds.HvH.FakeDuckKey) then
+		bSendPacket = true
+	end
+
 	if settings.Aimbot.PSilent and !weap:StartWith("cw_") and !weap:StartWith("arccw_") then
 		local norm = angnocomp:Forward()
 		local cnorm = samoware.CompressNormal(norm)
-		
+
 		-- make sure our compressed vector will hit aimPly
 		if !IsVisible(me:EyePos() + cnorm * 32768, aimPly, nil, cnorm) then
 			if settings.Aimbot["Force PSilent"] then
@@ -2930,38 +3289,167 @@ function Aimbot(cmd)
 				cmd:SetViewAngles(aimAngs)
 			end
 		end
-		
+
 		samoware.SetContextVector(cmd, aimAngs:Forward())
 	else
 		cmd:SetViewAngles(aimAngs)
 	end
-	
+
 	if settings.Aimbot.Autoshoot then
 		cmd:SetButtons(bor(cmd:GetButtons(), IN_ATTACK))
 	end
-	
+
 	return true
 end
 
 end
 
 local function GetPlayerYawInv()
-	if !IsValid(aaply) then 
+	if !IsValid(aaply) then
 		return silentangles.y
 	end
 
 	return mNormalizeAng((VelPredict(aaply:GetPos(), aaply) - me:EyePos()):Angle().y + 180)
 end
 
+local FakeLag, CheckPeeking, FakeLagInAir, ticksUntilSend
+
+do
+
+ticksUntilSend = 0
+function FakeLag(cmd)
+	bSendPacket = false
+	if ticksUntilSend <= 0 then
+		if settings.HvH["Randomize choke"] then
+			local numChokes = settings.HvH["FakeLag choke"]
+			local randomChokes = mrandom(0, 21 - numChokes)
+			ticksUntilSend = numChokes + randomChokes
+		else
+			ticksUntilSend = settings.HvH["FakeLag choke"]
+		end
+
+		bSendPacket = true
+	else
+		ticksUntilSend = ticksUntilSend - 1
+	end
+end
+
+local peeking, peeked = false, false
+
+local function FakeLagOnPeek(cmd)
+	ticksUntilSend = 21 - chokes - 1
+	if chokes >= 20 then
+		peeked = true
+		peeking = false
+		bSendPacket = true
+		return
+	end
+end
+
+local function WarpOnPeek()
+	ShiftTickbase()
+
+	peeked = true
+	peeking = false
+end
+
+function CheckPeeking()
+	local plys
+	for extr = 1, 8 do
+		plys = GetPlayers("My pos", extr, 1, true)
+		if plys then break end
+	end
+
+	if plys and !peeking and !peeked then
+		peeking = true
+		peeked = false
+	elseif !plys then
+		peeking = false
+		peeked = false
+	end
+
+	if peeking and !peeked then
+		if !shiftingtickbase and tickbaseshiftcharge and settings.HvH["Warp on peek"] then
+			WarpOnPeek()
+		elseif settings.HvH["FakeLag on peek"] then
+			FakeLagOnPeek()
+		end
+	end
+end
+
+function FakeLagInAir(cmd)
+	if !me:IsOnGround() and chokes < 14 then
+		bSendPacket = false
+	end
+end
+
+end
+
 local YawAntiAim
 do
 
+local function ClosestPointOnRay(target, rayStart, rayEnd)
+	local to = target - rayStart
+	local dir = rayEnd - rayStart
+	local length = dir:Length()
+	dir:Normalize()
+
+	local rangeAlong = dir:Dot(to)
+	if rangeAlong < 0 then
+		return rayStart
+	end
+
+	if rangeAlong > length then
+		return rayEnd
+	end
+
+	return rayStart + dir * rangeAlong
+end
+
+local impacts = {}
+samoware.AddHook("OnImpact", "samoware_aa", function(data)
+	local bestPlayer = nil
+	local bestDistance = math.huge
+	for _, ply in ipairs(player.GetAll()) do
+		local distance = ply:EyePos():DistToSqr(data.m_vStart)
+		if distance < bestDistance then
+			bestPlayer = ply
+			bestDistance = distance
+		end
+	end
+
+	local attacker = bestPlayer
+
+	local headId = FindBone(me, "Head")
+	local headMat = me:GetBoneMatrix(headId)
+	local headPos
+	if headMat then
+		headPos = headMat:GetTranslation()
+	else
+		headPos = me:GetBonePosition(headId)
+	end
+
+	if headPos then
+		local nearestHeadPos = ClosestPointOnRay(headPos, data.m_vStart, data.m_vOrigin)
+		local headPosDiff = headPos - nearestHeadPos
+		local distanceToHead = headPosDiff:Length()
+		if distanceToHead < 64 then
+			local ang = -math.deg(math.atan2(headPosDiff.y, headPosDiff.x)) + realangles.y
+			ang = mNormalizeAng(ang)
+
+			attacker.sw_anti_bruteforce_angle = ang > 0 and -1 or 1
+		end
+	end
+end)
+
+local handBlockPitch, handBlockYaw = 0, 0
+local hruxisSide = 1
 function YawAntiAim(cmd)
 	local mode = settings.HvH.AA
 	local yaw, pitch = 0
-	
+
 	local invert = settings.HvH.Invert and keybinds.HvH.InvertKey
-	
+
 	if mode == "Jitter" then
 		yaw = mRand(-180, 180)
 	elseif mode == "Spin" then
@@ -2978,7 +3466,7 @@ function YawAntiAim(cmd)
 	elseif mode == "Legit" then
 		local angs = settings.Aimbot.Silent and silentangles or cmd:GetViewAngles()
 		pitch = angs.p
-		
+
 		if bSendPacket then
 			yaw = angs.y
 		else
@@ -2994,18 +3482,18 @@ function YawAntiAim(cmd)
 		else
 			yaw = settings.Aimbot.Silent and silentangles.y or cmd:GetViewAngles().y
 		end
-		
+
 		if me:GetVelocity():Length2D() > 1 then
 			-- Use LBY aa
 			yaw = samoware.GetCurrentLBY(me:EntIndex()) + (bSendPacket and 180 or 0)
 		else
 			-- Use LBY Break aa
-			
+
 			local side = invert and -1 or 1
-			
+
 			local minDelta = settings.HvH["LBY Min delta"]
 			local breakDelta = settings.HvH["LBY Break delta"]
-	
+
 			if !bSendPacket then
 				local lbyTarget = samoware.GetTargetLBY(me:EntIndex())
 				if mabs(mNormalizeAng(lbyTarget - fakeangles.y)) < minDelta then
@@ -3017,8 +3505,77 @@ function YawAntiAim(cmd)
 				end
 			end
 		end
+	elseif mode == "Anti BruteForce" then
+		if IsValid(aaply) and aaply.sw_anti_bruteforce_angle then
+			local delta = invert and 89 or -89
+			yaw = GetPlayerYawInv() + (bSendPacket and delta or -delta) * aaply.sw_anti_bruteforce_angle
+		else
+			yaw = silentangles.y
+		end
+	elseif mode == "HandBlock" and aaply then
+		local headId = FindBone(me, "Head")
+		local headPos = me:GetBoneMatrix(headId):GetTranslation()
+
+		local handId = FindBone(me, "ValveBiped.Bip01_R_Hand")
+		local handPos = me:GetBoneMatrix(handId):GetTranslation()
+
+		local eyePos = aaply:EyePos()
+
+		-- Calculate pitch
+		local SMOOTH_FACTOR = 1 / 1.6
+		do
+			local diff = handPos - eyePos
+			local pitchDiff = math.deg(math.asin(diff.z / diff:Length()))
+
+			handBlockPitch = mClamp(mNormalizeAng(handBlockPitch + pitchDiff * SMOOTH_FACTOR), -90, 90)
+			pitch = handBlockPitch
+		end
+
+		if handBlockPitch < -60 or handBlockPitch > 60 then
+			pitch = 89
+			yaw = GetPlayerYawInv()
+		else
+			-- Calculate yaw
+			do
+				local vecA = handPos - headPos
+				vecA.z = 0
+
+				local vecB = handPos - eyePos
+				vecB.z = 0
+
+				local product = vecA:Dot(vecB)
+				local length = vecA:Length2D() * vecB:Length2D()
+
+				local yawDiff = 180 - mdeg(math.acos(mClamp(product / length, -1, 1)))
+				local sign = vecA:Cross(vecB).z > 0
+				if sign then
+					yawDiff = -yawDiff
+				end
+
+				handBlockYaw = mNormalizeAng(handBlockYaw + yawDiff * SMOOTH_FACTOR)
+				yaw = handBlockYaw
+			end
+		end
+	elseif mode == "Hruxis" then
+		if bSendPacket then
+			hruxisSide = hruxisSide * -1
+		end
+
+		-- 360/s
+		local swaySpeed = (ticksUntilSend + 1) / 12 * math.pi
+		local swayAmount = math.sin(CurTime() * swaySpeed) * 45
+
+		yaw = GetPlayerYawInv() + 55 * hruxisSide + swayAmount * hruxisSide * -1
+
+		-- Break lby
+		/*if !bSendPacket and chokes == 1 then --ticksUntilSend < 2 then
+			print(bSendPacket)
+			local lby = samoware.GetCurrentLBY(me:EntIndex())
+			yaw = mNormalizeAng(lby - 180)
+		end*/
+		--cmd:SetSideMove(cmd:CommandNumber() % 2 == 0 and -25 or 25)
 	end
-	
+
 	return yaw, pitch
 end
 
@@ -3033,11 +3590,11 @@ local pitchflip = false
 function PitchAntiAim(cmd)
 	local mode = settings.HvH.FakePitch
 	local pitch = 0
-	
+
 	if bSendPacket then
 		pitchflip = !pitchflip
 	end
-	
+
 	if mode == "Custom" then
 		pitch = settings.HvH["Real Pitch"]
 	elseif mode == "Fake down" then
@@ -3051,7 +3608,7 @@ function PitchAntiAim(cmd)
 	elseif mode == "Jitter" then
 		pitch = mRand(-89, 89)
 	end
-	
+
 	return pitch
 end
 
@@ -3062,7 +3619,7 @@ local Crimwalk
 do
 
 local crimwalkcombos = {
-	
+
 }
 
 local holdtypes = {
@@ -3109,33 +3666,33 @@ end
 local function GetCrimwalk()
 	local weaps = me:GetWeapons()
 	local holdtypes = {}
-	
+
 	for i = 1, #weaps do
 		local weap = weaps[i]
 		local weapht = weap:GetHoldType()
-		
+
 		if !holdtypes[weapht] then
 			holdtypes[weapht] = {weap}
 			continue
 		end
-		
+
 		local ht = holdtypes[weapht]
 		ht[#ht + 1] = weap
 	end
-	
+
 	local available = {}
-	
+
 	for i = 1, #crimwalkcombos do
 		local v = crimwalkcombos[i]
 		local h1, h2 = v.h1, v.h2
-		
+
 		if !holdtypes[h1] or !holdtypes[h2] then
 			continue
 		end
-		
+
 		available[#available + 1] = v
 	end
-	
+
 	local qmax = 0
 	for i = 1, #available do
 		local q = available[i].q
@@ -3143,59 +3700,59 @@ local function GetCrimwalk()
 			qmax = q
 		end
 	end
-	
+
 	local bestcrimwalks = {}
 	local bestq = 0
-	
+
 	for i = 1, #available do
 		local v = available[i]
-		
+
 		if v.q == qmax then
 			local weaps1 = holdtypes[v.h1]
 			local weaps2 = holdtypes[v.h1]
-			
+
 			v.w1 = weaps1[mrandom(#weaps1)]
 			v.w2 = weaps2[mrandom(#weaps2)]
-			
+
 			bestcrimwalks[#bestcrimwalks + 1] = v
 			bestq = v.q
 		end
 	end
-	
+
 	return bestcrimwalks
 end
 
 local ci, nextchange = 1, 0
 function Crimwalk(cmd)
 	local crimwalks = GetCrimwalk()
-	
+
 	if #crimwalks == 0 then return end
-	
+
 	if CurTime() > nextchange then
 		ci = mrandom(1, #crimwalks)
 		nextchange = CurTime() + 0.3
 	end
-	
+
 	if ci > #crimwalks then
 		ci = mrandom(1, #crimwalks)
 	end
-	
+
 	local cw = crimwalks[ci]
-	
+
 	cmd:SelectWeapon(cmd:CommandNumber() % 2 == 0 and cw.w1 or cw.w2)
 	cmd:SetViewAngles(Angle(cmd:CommandNumber() % 2 == 0 and cw.a1 or cw.a2, GetPlayerYawInv() - (mrandom(0, 1) == 0 and -45 or 45), 0))
-	
+
 	if cmd:CommandNumber() % 2 == 0 then
 		cmd:SetButtons(bit.bor(cmd:GetButtons(), IN_DUCK))
 	end
-	
+
 	if cmd:CommandNumber() % 4 == 0 then
 		local vel = me:GetVelocity()
 		local spd = vel:Length2D()
 		local dir = vel:Angle()
-		
+
 		dir.y = cmd:GetViewAngles().y - dir.y
-		
+
 		local negDir = dir:Forward() * -spd
 
 		cmd:SetForwardMove(negDir.x)
@@ -3207,48 +3764,48 @@ end
 
 local function Freestand(cmd)
 	if !IsValid(aaply) then return false end
-	
+
 	local headpos = me:GetBonePosition(me:LookupBone("ValveBiped.Bip01_Head1"))
 	if !headpos then return end
-	
+
 	local selfpos = me:GetPos()
 	local headoffset = Vector(selfpos.x, selfpos.y, headpos.z):Distance(headpos) + 5
-	
+
 	local found = true
-	
+
 	local pos = aaply:WorldToLocal(selfpos)
 	local bearing = mdeg(-math.atan2(pos.y, pos.x)) + 180 + 90
 	local left, right = bearing - 180 - 90, bearing - 180 + 90
-	
+
 	local function CheckYaw(yaw)
 		yaw = mrad(yaw)
 		local x, y = msin(yaw), mcos(yaw)
-		
+
 		local headoffsetvec = Vector(x, y, 0) * headoffset
 		headoffsetvec.z = headpos.z - selfpos.z
-		
+
 		local tr = TraceLine({
 			start = aaply:EyePos() + aaply:GetVelocity() * TICK_INTERVAL * 4,
 			endpos = selfpos + headoffsetvec,
 			filter = aaply
 		})
-		
+
 		return tr.Fraction < 1 and tr.Entity != me
 	end
-	
+
 	local function Normalize(ang) return 360 - ang + 90 end
-	
+
 	local leftcheck, rightcheck = CheckYaw(left), CheckYaw(right)
-	
+
 	left, right = Normalize(left), Normalize(right)
-	
+
 	do
 		local headlocal = me:WorldToLocal(headpos)
 		if headlocal.x > 0 then
 			left, right = right, left
 		end
 	end
-	
+
 	if leftcheck and rightcheck then
 		return false
 	elseif leftcheck then
@@ -3256,110 +3813,54 @@ local function Freestand(cmd)
 	elseif rightcheck then
 		return true, right, left
 	end
-	
+
 	return false
 end
 
-local fakelagtick = 0
-local function FakeLag(cmd)
-	local send = settings.HvH["FakeLag send"]
-	local choke = settings.HvH["FakeLag choke"]
-
-	local fakelagsend = send + choke
-	fakelagtick = fakelagtick + 1
-
-	if fakelagtick > fakelagsend then
-		fakelagtick = 1
-	end
-
-	bSendPacket = send >= fakelagtick
-end
-
 local function ShiftTickbase(amount)
+	/*
 	local maxshift = mmax(MAX_TICKBASE_SHIFT - ticksshiftedtotal - chokes, 0)
-	
+
 	amount = mClamp(amount or maxshift, 0, maxshift)
-	
+
 	shiftingtickbase = true
 	for i = 1, amount do
-		-- enginepred.CLMove()
+		samoware.CL_Move()
 	end
 	shiftingtickbase = false
-	
+
 	ticksshifted = amount
 	ticksshiftedtotal = ticksshiftedtotal + ticksshifted + chokes
-	
+
 	if ticksshiftedtotal >= MAX_TICKBASE_SHIFT then
 		tickbaseshiftcharge = false
 	end
+	*/
+
+	local ticksAllowed = samoware.GetTicksAllowed()
+	local maxShift = mmax(ticksAllowed - chokes, 0)
+	amount = mClamp(amount or maxShift, 0, maxShift)
+
+	print("SHIFT", amount, ticksAllowed)
+	samoware.SetTickbaseShift(amount)
 end
 
 local function RechargeShift()
+	/*
 	if ticksshiftedtotal == 0 then
-		samoware.SetOutSeq(samoware.GetOutSeq() - MAX_TICKBASE_SHIFT)
+		samoware.SetOutSequenceNr(samoware.GetOutSequenceNr() - MAX_TICKBASE_SHIFT)
 	else
-		samoware.SetOutSeq(samoware.GetOutSeq() - ticksshiftedtotal)
+		samoware.SetOutSequenceNr(samoware.GetOutSequenceNr() - ticksshiftedtotal)
 	end
-	
+
 	tickbaseshiftcharging = true
 	ticksshifted = 0
 	ticksshiftedtotal = 0
-end
+	*/
 
-local CheckPeeking
-
-do
-
-local peeking, peeked = false, false
-
-local function FakeLagOnPeek(cmd)
-	if chokes >= (bSendPacket and 14 or 13) then
-		peeked = true
-		peeking = false
-		
-		return
-	end
-	
-	bSendPacket = false
-end
-
-local function WarpOnPeek()
-	ShiftTickbase()
-	
-	peeked = true
-	peeking = false
-end
-
-function CheckPeeking()
-	local plys
-	for extr = 1, 8 do
-		plys = GetPlayers("My pos", extr, 1, true)
-		if plys then break end
-	end
-	
-	if plys and !peeking and !peeked then
-		peeking = true
-		peeked = false
-	elseif !plys then
-		peeking = false
-		peeked = false
-	end
-	
-	if peeking and !peeked then
-		if !shiftingtickbase and tickbaseshiftcharge and settings.HvH["Warp on peek"] then
-			WarpOnPeek()
-		elseif settings.HvH["FakeLag on peek"] then
-			FakeLagOnPeek()
-		end
-	end
-end
-
-end
-
-local function FakeLagInAir(cmd)
-	if !me:IsOnGround() and chokes < 14 then
-		bSendPacket = false
-	end
+	local ticksToRecharge = MAX_TICKBASE_SHIFT - samoware.GetTicksAllowed()
+	print("Charge", MAX_TICKBASE_SHIFT, samoware.GetTicksAllowed())
+	samoware.SetTickbaseRecharge(ticksToRecharge)
 end
 
 local FakeEblan
@@ -3378,29 +3879,29 @@ function FakeEblan(cmd)
 	if !bSendPacket then return end
 	if keybinds.HvH.FakeEblanKey then
 		if settings.HvH.FakeEblanMode == "Mega" then
-			samoware.SetOutSeq(samoware.GetOutSeq() + mrandom(0, settings.HvH["FakeEblan strength"]))
+			samoware.SetOutSequenceNr(samoware.GetOutSequenceNr() + mrandom(0, settings.HvH["FakeEblan strength"]))
 		elseif settings.HvH.FakeEblanMode == "Slippery" then
-			samoware.SetOutSeq(samoware.GetOutSeq() + fakeeblan_factor * settings.HvH["FakeEblan strength"] )
+			samoware.SetOutSequenceNr(samoware.GetOutSequenceNr() + fakeeblan_factor * settings.HvH["FakeEblan strength"] )
 		elseif settings.HvH.FakeEblanMode == "Airstuck" then
-			samoware.SetOutSeq(samoware.GetOutSeq() + 2500)
+			samoware.SetOutSequenceNr(samoware.GetOutSequenceNr() + 2500)
 		elseif settings.HvH.FakeEblanMode == "M9K" then
 			if CurTime() > nextm9k and band(cmd:GetButtons(), IN_ATTACK) != 0 then
-				samoware.SetOutSeq(samoware.GetOutSeq() + 5000)
+				samoware.SetOutSequenceNr(samoware.GetOutSequenceNr() + 5000)
 				nextm9k = CurTime() + 0.5
 			end
 		else
-			samoware.SetOutSeq(samoware.GetOutSeq() + 5000 * settings.HvH["FakeEblan strength"])
+			samoware.SetOutSequenceNr(samoware.GetOutSequenceNr() + 5000 * settings.HvH["FakeEblan strength"])
 		end
 	end
-	
-	local curack = samoware.GetAckNr()
+
+	local curack = samoware.GetOutSequenceNrAck()
 	local diff = curack - prevack
 	if diff == 0 then
 		numerrors = numerrors + 1
 		if numerrors > 33 then
-			print(("[samoware] Too much lost packets, fixing (delta %d)"):format(samoware.GetOutSeq() - samoware.GetAckNr()))
-			samoware.SetOutSeq(curack)
-			
+			print(("[samoware] Too much lost packets, fixing (delta %d)"):format(samoware.GetOutSequenceNr() - samoware.GetOutSequenceNrAck()))
+			samoware.SetOutSequenceNr(curack)
+
 			numerrors = 0
 		end
 	else
@@ -3409,20 +3910,75 @@ function FakeEblan(cmd)
 			numerrors = 0
 		end
 	end
-	
+
 	prevack = curack
 end
 
 end
 
+/*
+
+-16.000000 -16.000000 0.000000	16.000000 16.000000 36.000000
+-16.000000 -16.000000 0.000000	16.000000 16.000000 72.000000
+
+*/
+
+local prevpos = Vector()
+local function DuckInAir(cmd)
+	if me:IsOnGround() then return end
+
+	local PRED_TICKS = 4
+
+	local startPosUnducked = me:GetPos()
+	local isDucking = band(me:GetFlags(), FL_DUCKING) != 0
+	if isDucking then
+		-- Fix player position
+		startPosUnducked.z = startPosUnducked.z - (72 - 36)
+	end
+
+	local canDuck = false
+	samoware.StartSimulation(me:EntIndex())
+	for i = 1, PRED_TICKS do
+		samoware.SimulateTick()
+
+		local simData = samoware.GetSimulationData()
+
+		local maxs = me:OBBMaxs()
+		maxs.z = 72 -- Standing height
+
+		if isDucking then
+			-- Fix player position
+			simData.m_vecAbsOrigin.z = simData.m_vecAbsOrigin.z - (72 - 36)
+		end
+
+		local trace = TraceHull({
+			start = startPosUnducked,
+			endpos = simData.m_vecAbsOrigin,
+			mins = me:OBBMins(),
+			maxs = maxs,
+			filter = me,
+			mask = MASK_PLAYERSOLID
+		})
+
+		canDuck = !me:IsOnGround() and !trace.Hit
+	end
+	samoware.FinishSimulation()
+
+	if canDuck and mrandom(0, 1) == 1 then
+		cmd:SetButtons(bor(cmd:GetButtons(), IN_DUCK))
+	end
+end
+
 local function FakeDuck(cmd)
+	if !me:IsOnGround() then return end
+
 	local sendduck = bSendPacket
 	if settings.HvH["Invert FakeDuck"] then
 		sendduck = !sendduck
 	end
-	
+
 	if cmd:KeyDown(IN_DUCK) then return end
-	
+
 	if sendduck then
 		cmd:SetButtons(bor(cmd:GetButtons(), IN_DUCK))
 	else
@@ -3436,33 +3992,35 @@ local function SetBreakLagcompTicks()
 
 	local dst_per_tick = speed * TICK_INTERVAL
 
-	local chokes = mceil(64 / dst_per_tick)
-	chokes = mClamp(chokes, 1, 14)
+	local chokes = math.ceil(64 / dst_per_tick)
+	chokes = mClamp(chokes, 1, 21)
 
 	settings.HvH["FakeLag choke"] = chokes
-	settings.HvH["FakeLag send"] = 1
+	-- if settings.HvH["Randomize choke"] then
+	-- 	settings.HvH["FakeLag choke"] = settings.HvH["FakeLag choke"] + mrandom(0, 21 - chokes)
+	-- end
 end
 
 local function ESP()
 	local dist = settings.Visuals.ESPDistance
 	dist = dist * dist
-	
+
 	local realtime = RealTime()
 	local selfpos = me:GetPos()
 	for k, v in ipairs(player.GetAll()) do
 		if !v:Alive() or v == me then continue end
-		
+
 		local dormant = v:IsDormant()
 		if settings.Visuals.Dormant and dormant then
 			dormant = (realtime - v.sw_last_dormant) > 5
 		end
-		
+
 		if dormant then continue end
-		
+
 		local vpos = v:GetPos()
-		
+
 		if vpos:DistToSqr(selfpos) > dist then continue end
-		
+
 		local vcenter = v:OBBCenter()
 		local omin, omax = v:OBBMins(), v:OBBMaxs()
 		local postbl = {
@@ -3475,130 +4033,130 @@ local function ESP()
 			(vpos + Vector(omax.x, omax.y, omin.z)):ToScreen(),
 			(vpos + Vector(omax.x, omin.y, omin.z)):ToScreen()
 		}
-		
+
 		local x1, x2, y1, y2 = math.huge, -math.huge, math.huge, -math.huge
-		
+
 		local visible = false
 		for i = 1, #postbl do
 			local v = postbl[i]
 			if v.visible then visible = true end
-			
+
 			if v.x < x1 then x1 = v.x end
 			if v.x > x2 then x2 = v.x end
 			if v.y < y1 then y1 = v.y end
 			if v.y > y2 then y2 = v.y end
 		end
-		
+
 		if !visible then continue end
-		
+
 		local teamcolor = team.GetColor(v:Team())
-		
+
 		if settings.Visuals.Dormant and v:IsDormant() then
 			teamcolor.a = (1 - ((realtime - v.sw_last_dormant) / 5)) * 255
 		end
-		
+
 		if settings.Visuals.Box then
 			surface_SetDrawColor(teamcolor)
 			surface.DrawOutlinedRect(x1, y1, x2 - x1, y2 - y1)
 		end
-		
+
 		local i = 0
 		surface_SetTextColor(color_white)
 		surface_SetFont("swcc_text_esp")
-		
+
 		local upcenter = x1 + (x2 - x1) * 0.5
-		
+
 		if settings.Visuals.Name then
 			local name = v:Nick()
-			
+
 			local tw, th = surface.GetTextSize(name)
-			
+
 			surface_SetTextPos(upcenter - tw * 0.5, y1 - th - th * i)
 			surface_DrawText(name)
-			
+
 			i = i + 1
 		end
-		
+
 		if settings.Visuals.Rank then
 			local rank = v:GetUserGroup()
-			
+
 			local tw, th = surface.GetTextSize(rank)
-			
+
 			surface_SetTextPos(upcenter - tw * 0.5, y1 - th - th * i)
 			surface_DrawText(rank)
-			
+
 			i = i + 1
 		end
-		
+
 		if settings.Visuals.Weapon then
 			local weap = v:GetActiveWeapon()
 			if IsValid(weap) then
 				local class = weap:GetClass()
 				local tw, th = surface.GetTextSize(class)
-				
+
 				surface_SetTextPos(upcenter - tw * 0.5, y1 - th - th * i)
 				surface_DrawText(class)
-				
+
 				i = i + 1
 			end
 		end
-		
+
 		local health, armor = v:Health(), v:Armor()
-		
+
 		if settings.Visuals.Health then
 			local str = tostring(health)
 			if armor > 0 then
 				str = str .. " [" .. armor .. "]"
 			end
-			
+
 			local tw, th = surface.GetTextSize(str)
-			
+
 			surface_SetTextPos(upcenter - tw * 0.5, y1 - th - th * i)
 			surface_DrawText(str)
-			
+
 			i = i + 1
 		end
-		
+
 		if settings.Visuals.Skeletons then
 			surface_SetDrawColor(color_white)
 			for i = 0, v:GetBoneCount() - 1 do
 				local parent = v:GetBoneParent(i)
 				if !parent then continue end
-				
+
 				local bonepos = v:GetBonePosition(i)
 				if bonepos == vpos then continue end
-				
+
 				local parentpos = v:GetBonePosition(parent)
 				if !bonepos or !parentpos then continue end
-				
+
 				local p1, p2 = bonepos:ToScreen(), parentpos:ToScreen()
-				
+
 				surface_DrawLine(p1.x, p1.y, p2.x, p2.y)
 			end
 		end
-		
+
 		if settings.Visuals.HealthBar then
 			local maxhealth = v:GetMaxHealth()
-			
+
 			local healthfrac = mmin(health / maxhealth, 1)
 			local height = healthfrac * (y2 - y1)
-			
+
 			local c = healthfrac * 255
 			surface_SetDrawColor(255 - c,  c, 0)
 			surface_DrawRect(x1 - 3 - 2, y1, 3, height)
 		end
-		
+
 		if settings.Visuals.Extras then
 			local flags = {}
 
 			if v:IsTyping() then
 				flags[#flags + 1] = "Typing"
 			end
-			
+
 			if v:IsPlayingTaunt() then
 				flags[#flags + 1] = "Taunting"
 			end
-			
+
 			for i = 0, 13 do
 				if v:IsValidLayer(i) then
 					if v:GetSequenceActivityName(v:GetLayerSequence(i)):find("RELOAD") then
@@ -3607,15 +4165,15 @@ local function ESP()
 					end
 				end
 			end
-			
+
 			if v.sw_prev_pos and v.sw_cur_pos and v.sw_prev_pos:DistToSqr(v.sw_cur_pos) > 4096 then
 				flags[#flags + 1] = "Breaking LC"
 			end
-			
+
 			for i = 1, #flags do
 				local str = flags[i]
 				local tw, th = surface.GetTextSize(str)
-			
+
 				surface_SetTextPos(x2, y1 - th + th * i)
 				surface_DrawText(str)
 			end
@@ -3664,12 +4222,12 @@ local function CalcForward(cmd)
 			elseif mx > 80 then
 				return
 			end
-			
+
 			local spd = me:GetVelocity():Length2D()
 			if spd == 0 then
 				spd = 1
 			end
-			
+
 			return 50000 * (1 / (spd * mx))
 		end
 	end
@@ -3687,6 +4245,22 @@ end
 
 local function DefaultAutoStafe(cmd)
 	if !cmd:KeyDown(IN_JUMP) then return end
+
+	--[=[if !me:IsOnGround() then
+		if mabs(cmd:GetMouseX()) < 1 then
+			cmd:SetSideMove(cmd:GetMouseX() < 0 and -10000 or 10000)
+		else
+			local velocity = me:GetVelocity()
+			cmd:SetForwardMove(36000 * 4 / velocity:Length2D())
+			cmd:SetSideMove(((cmd:CommandNumber() % 2) == 0) and -10000 or 10000)
+		end
+	elseif me:IsOnGround() and cmd:KeyDown(IN_JUMP) then
+		if mabs(cmd:GetMouseX()) < 1 then
+			cmd:SetForwardMove(10000)
+		end
+	end
+	--]=]
+
 
 	local moveType = me:GetMoveType()
 	if me:WaterLevel() > 1 or moveType == MOVETYPE_LADDER or moveType == MOVETYPE_NOCLIP then return end
@@ -3736,9 +4310,13 @@ local function DefaultAutoStafe(cmd)
 		cmd:SetViewAngles(view)
 	end
 
-	cmd:SetButtons(bor(cmd:GetButtons(), IN_SPEED))
+	if me:IsOnGround() then
+		cmd:SetButtons(bor(cmd:GetButtons(), IN_SPEED))
+	end
+
 	cmd:SetForwardMove(forwardMove)
 	cmd:SetSideMove(sideMove)
+	--]=]
 end
 
 function AutoStrafe(cmd)
@@ -3749,7 +4327,7 @@ function AutoStrafe(cmd)
 
 	if !cmd:KeyDown(IN_JUMP) then return end
 	if me:GetMoveType() == MOVETYPE_NOCLIP or me:GetMoveType() == MOVETYPE_LADDER or me:WaterLevel() > 1 then return end
-	
+
 	local base = settings.Aimbot.Silent and silentangles or me:EyeAngles()
 	if settings.Misc["Multidir. autostrafe"] then
 		if me:IsOnGround() and !cmd:KeyDown(IN_JUMP) then
@@ -3778,7 +4356,7 @@ function AutoStrafe(cmd)
 				autostrafe_wish_dir = base.y + -90 -- right
 			else
 				autostrafe_wish_dir = base.y + 0
-				
+
 				-- fix antiaim strafing
 				cmd:SetButtons(bor(cmd:GetButtons(), IN_FORWARD))
 			end
@@ -3786,12 +4364,12 @@ function AutoStrafe(cmd)
 	else
 		autostrafe_transition = false
 	end
-	
+
 	cmd:SetButtons(bor(cmd:GetButtons(), IN_SPEED))
-	
+
 	local true_dir = me:GetVelocity():Angle().y
 	local speed_rotation = mmin(mdeg(math.asin(30 / me:GetVelocity():Length2D())) * 0.5, 45)
-	
+
 	if settings.Misc["Multidir. autostrafe"] and autostrafe_transition then
 		-- Calculate the step by using our ideal strafe rotation
 		local ideal_step = speed_rotation + autostrafe_calc_dir
@@ -3823,11 +4401,11 @@ function AutoStrafe(cmd)
 	else
 		autostrafe_transition = false
 	end
-	
+
 	if autostrafe_transition then
 		cmd:SetForwardMove(0)
 		cmd:SetSideMove(0)
-		
+
 		local movex = CalcForward(cmd) or 0
 		local movey = CalcSide(cmd) or 0
 
@@ -3836,7 +4414,7 @@ function AutoStrafe(cmd)
 
 		-- Rotate our direction based on our new, defininite direction
 		local rotation = mrad(base.y - direction)
-	
+
 		local cos_rot = mcos(rotation)
 		local sin_rot = msin(rotation)
 
@@ -3849,12 +4427,12 @@ function AutoStrafe(cmd)
 	else
 		-- fix antiaim strafing
 		cmd:SetButtons(bor(cmd:GetButtons(), IN_FORWARD))
-		
+
 		local fwd, side = CalcForward(cmd), CalcSide(cmd)
 		if fwd then
 			cmd:SetForwardMove(fwd)
 		end
-		
+
 		if side then
 			cmd:SetSideMove(side)
 		end
@@ -3869,97 +4447,583 @@ AddHook("HUDPaint", function()
 	if settings.Misc["Multidir. indicator"] then
 		local cur = mrad(mNormalizeAng(me:GetVelocity():Angle().y))
 		local xcur, ycur = msin(cur) * scale, mcos(cur) * scale
-		
+
 		surface_SetDrawColor(indicator_cur)
 		surface_DrawLine(cw, ch, cw + xcur, ch + ycur)
-		
+
 		local targ = mrad(mNormalizeAng(autostrafe_calc_dir))
 		local xtarg, ytarg = msin(targ) * scale, mcos(targ) * scale
-		
+
 		surface_SetDrawColor(indicator_targ)
 		surface_DrawLine(cw, ch, cw + xtarg, ch + ytarg)
 	end
+
+	draw.SimpleText(me:GetVelocity():Length(), "DermaLarge", 128, 128)
 end)
 
-local numHops = 0
 local wasOnGround = false
 function BunnyHop(cmd)
 	if !cmd:KeyDown(IN_JUMP) then return end
 
-	local moveType = me:GetMoveType()
-	local canRelease = me:WaterLevel() > 1 or moveType == MOVETYPE_LADDER or moveType == MOVETYPE_NOCLIP
-
-	if me:IsOnGround() then
-		numHops = numHops + 1
-
-		local shouldRelease = true
-		if settings.Misc["SimplAC safe mode"] then
-			shouldRelease = numHops >= 6
-		end
-
-		if shouldRelease and canRelease then
-			numHops = 0
-			cmd:RemoveKey(IN_JUMP)
-			return
-		end
-
-		if wasOnGround then
-			wasOnGround = false
-			cmd:RemoveKey(IN_JUMP)
-			return
-		end
-
+	if !me:IsOnGround() or wasOnGround then
+		wasOnGround = false
+		cmd:RemoveKey(IN_JUMP)
+	else
 		wasOnGround = true
-		return
+	end
+end
+
+end
+
+local jesusVel = me:GetVelocity()
+local function MichaelJackson(cmd)
+	local function getDecelRatio(velocity)
+		local sv_friction = GetConVar("sv_friction"):GetFloat()
+		local sv_stopspeed = GetConVar("sv_stopspeed"):GetFloat()
+
+		do
+			local velAngle = velocity:Angle()
+			velAngle.y = velAngle.y - cmd:GetViewAngles().y
+
+			local velDir = velAngle:Forward()
+			velDir = velDir * 10000
+			velDir.z = 0
+
+			local fRatio = me:GetMaxSpeed() / math.sqrt(velDir:Length())
+			velDir.x = velDir.x * fRatio
+			velDir.y = velDir.y * fRatio
+			velDir.z = 0
+
+			velocity = velocity - velDir
+		end
+
+		local friction = sv_friction * 1
+		local speed = velocity:Length()
+		local control = mmax(speed, sv_stopspeed)
+		local drop = control * friction * TICK_INTERVAL
+		local newSpeed = mmax(speed - drop, 0)
+		local ratio = newSpeed / speed
+
+		return ratio
 	end
 
-	wasOnGround = true
+	local desiredVelocity = 50
 
-	if !canRelease then return end
+	local ticksToStop = 0
+	local predictedVelocity = jesusVel --me:GetVelocity()
+	while ticksToStop < 21 and predictedVelocity:Length() > desiredVelocity do
+		local ratio = getDecelRatio(predictedVelocity)
+		predictedVelocity = predictedVelocity * ratio
+		ticksToStop = ticksToStop + 1
+	end
 
-	cmd:RemoveKey(IN_JUMP)
+	print(ticksToStop)
+
+	local shouldFastStop = chokes < 1 or chokes > (21 - ticksToStop)
+	if shouldFastStop then
+		local velocity = me:GetVelocity()
+		local velAngle = velocity:Angle()
+		velAngle.y = velAngle.y - cmd:GetViewAngles().y
+
+		local velDir = velAngle:Forward()
+		velDir = (velDir + Vector(500, 0, 0)) * 10000 --(velocity:Length2D() + 0) --(cmd:KeyDown(IN_SPEED) and 250 or 100))
+
+		cmd:SetForwardMove(-velDir.x)
+		cmd:SetSideMove(velDir.y)
+	else
+		jesusVel = me:GetVelocity()
+	end
 end
 
-end
+local StartCircleStrafe, FinishCircleStrafe
+do
+	local function InitializeMoveData(ply, cmd, out)
+		local moveData = out or {}
 
-local cstrafe_radius = 0
-local cstrafe_radius_calc = false
-local function CStrafe(cmd)
-	if keybinds.Misc.CStrafeKey and !cstrafe_radius_calc then
-		cstrafe_radius = settings.Misc["CStrafe max radius"]
-		cstrafe_radius = cstrafe_radius * cstrafe_radius
-		
-		for i = 10, 359, 25 do
-			local j = mrad(i)
-			
-			local x = mcos(j) * cstrafe_radius
-			local y = msin(j) * cstrafe_radius
-			local tr = TraceHull({
-				start = me:GetPos(),
-				endpos = me:GetPos() + Vector(x, y, 0),
-				filter = me,
+		-- Cached C calls
+		moveData.gravity = ply:GetGravity()
+		moveData.currentGravity = -physenv.GetGravity().z
+		moveData.jumpPower = ply:GetJumpPower()
+		moveData.groundEntity = ply:GetGroundEntity()
+		moveData.obbMins = ply:OBBMins()
+		moveData.obbMaxs = ply:OBBMaxs()
+		moveData.m_surfaceFriction = ply:GetFriction()
+
+		-- ConVars
+		moveData.sv_airaccelerate = GetConVar("sv_airaccelerate"):GetFloat()
+
+		moveData.m_vecViewAngles = cmd:GetViewAngles()
+		moveData.m_vecVelocity = ply:GetVelocity()
+		moveData.m_vecAbsOrigin = ply:GetPos()
+
+		-- From simulation.cpp
+		-- Set in threadedsimulation.cpp
+		/*
+		do
+			local forward, right, up = moveData.m_vecViewAngles:Forward(), moveData.m_vecViewAngles:Right(), moveData.m_vecViewAngles:Up()
+			moveData.m_flForwardMove = (moveData.m_vecVelocity.y - right.y / right.x * moveData.m_vecVelocity.x) / (forward.y - right.y / right.x * forward.x)
+			moveData.m_flSideMove = (moveData.m_vecVelocity.x - forward.x * moveData.m_flForwardMove) / right.x
+		end
+		*/
+
+		moveData.m_nButtons = cmd:GetButtons()
+		moveData.m_nOldButtons = 0 -- TODO
+
+		moveData.m_flMaxSpeed = ply:GetMaxSpeed()
+
+		return moveData
+	end
+
+	local function GetIdealAngleDelta(speed, maxSpeed, airAccelerate)
+		local term = (30 - (airAccelerate * maxSpeed * TICK_INTERVAL)) / speed
+		if term > -1 and term < 1 then
+			return mdeg(math.acos(term))
+		end
+
+		return 360
+	end
+
+	local function SolveCircle(a, b, c)
+		local x12 = a.x - b.x
+		local x13 = a.x - c.x
+
+		local y12 = a.y - b.y
+		local y13 = a.y - c.y
+
+		local y31 = c.y - a.y
+		local y21 = b.y - a.y
+
+		local x31 = c.x - a.x
+		local x21 = b.x - a.x
+
+		local sx13 = a.x * a.x - c.x * c.x
+		local sy13 = a.y * a.y - c.y * c.y
+
+		local sx21 = b.x * b.x - a.x * a.x
+		local sy21 = b.y * b.y - a.y * a.y
+
+		local f = ((sx13) * (x12)
+					+ (sy13) * (x12)
+					+ (sx21) * (x13)
+					+ (sy21) * (x13))
+					/ (2 * ((y31) * (x12) - (y21) * (x13)))
+
+		local g = ((sx13) * (y12)
+					+ (sy13) * (y12)
+					+ (sx21) * (y13)
+					+ (sy21) * (y13))
+					/ (2 * ((x31) * (y12) - (x21) * (y13)))
+
+
+		local c = -(a.x * a.x) - (a.y * a.y) - 2 * g * a.x - 2 * f * a.y
+
+		local h = -g
+		local k = -f
+		local sqrOfR = h * h + k * k - c
+
+		return h, k, msqrt(sqrOfR)
+	end
+
+	local function GetPossiblePaths(count, precision, pos, velocity, velocityYaw, speed2d)
+		local speed2dSafe = speed2d
+		if speed2dSafe < 1e-4 then
+			-- Prevent NaN in SolveCircle
+			speed2dSafe = 1
+		end
+
+		local traces = {}
+		for yawOffset = -90 - 45, 90 + 45, precision do
+			local yaw = math.NormalizeAngle(velocityYaw + yawOffset)
+			local yawDirection = Vector(math.cos(math.rad(yaw)), math.sin(math.rad(yaw)), 0)
+			local trace = TraceHull({
+				start = pos,
+				endpos = pos + yawDirection * speed2dSafe * 2,
 				mins = me:OBBMins(),
 				maxs = me:OBBMaxs(),
+				filter = me,
 				mask = MASK_PLAYERSOLID
 			})
-			
-			cstrafe_radius = mmin(cstrafe_radius, tr.StartPos:DistToSqr(tr.HitPos))
+
+			local distance = trace.StartPos:Distance(trace.HitPos)
+
+			-- debugoverlay.Line(trace.StartPos, trace.HitPos, TICK_INTERVAL * 2, color_white, true)
+			-- debugoverlay.Cross(trace.StartPos + yawDirection * distance * 0.5, 2, TICK_INTERVAL * 2, color_white, true)
+
+			traces[#traces + 1] = {
+				hitPos = trace.HitPos,
+				distance = distance,
+				yawOffset = yawOffset
+			}
 		end
-		
-		cstrafe_radius = math.sqrt(cstrafe_radius)
-		
-		cstrafe_radius_calc = true
-	elseif !keybinds.Misc.CStrafe then
-		cstrafe_radius_calc = false
+
+		-- Sort by distance
+		table.sort(traces, function(a, b)
+			return a.distance > b.distance
+		end)
+
+		local results = {}
+		for i = 1, math.min(count, #traces) do
+			local trace = traces[i]
+			results[i] = trace
+
+			do
+				local yaw = math.NormalizeAngle(velocityYaw + trace.yawOffset)
+				local yawDirection = Vector(math.cos(math.rad(yaw)), math.sin(math.rad(yaw)), 0)
+				debugoverlay.Cross(pos + yawDirection * trace.distance * 0.5, 5, TICK_INTERVAL * 2, Color(255, 0, 0), true)
+			end
+		end
+
+		return results
 	end
-	
-	if keybinds.Misc.CStrafeKey then
-		local y = mNormalizeAng((CurTime() * (200 - cstrafe_radius)) % 360)
-		
-		cmd:SetForwardMove(4000)
-		cmd:SetSideMove(0)
-		FixMove(cmd, Angle(0, y, 0))
+
+	local function CalculateAngularVelocities(possiblePaths, circleStrafeYaw, pos, velocity, velocityYaw, speed2d)
+		local wishDir = Vector(mcos(mrad(circleStrafeYaw)), msin(mrad(circleStrafeYaw)), 0)
+
+		local circleA = pos
+
+		local angVelocities = {}
+		for i = 1, #possiblePaths do
+			angVelocities[i] = math.Remap(i, 1, #possiblePaths, -5, 5)
+		end
+
+		/*for i = 1, #possiblePaths do
+			local path = possiblePaths[i]
+
+			-- Solve for circle radius and center
+			local circleB = pos + wishDir * speed2d * TICK_INTERVAL
+			local circleC = path.hitPos
+
+			local x, y, r = SolveCircle(circleA, circleB, circleC)
+			if r != r then -- NaN
+				circleB = pos + velocity * TICK_INTERVAL
+				x, y, r = SolveCircle(circleA, circleB, circleC)
+				if r != r then -- NaN again...
+					circleB = pos + wishDir
+					x, y, r = SolveCircle(circleA, circleB, circleC)
+				end
+			end
+
+			-- Get angular velocity
+			local circumference = math.pi * r * 2
+			local period = circumference / (speed2d + 1e-6)
+			local angularVelocity = mdeg((2 * math.pi) / period) * TICK_INTERVAL
+
+			-- Fix velocity sign
+			if path.yawOffset < 0 then
+				angularVelocity = -angularVelocity
+			end
+
+			angVelocities[i] = angularVelocity
+		end*/
+
+		return angVelocities
 	end
+
+	local moveDataCache = {}
+	local function CreateMovementData(angularVelocities, simTime, speed2d, cmd, circleStrafeYaw)
+		local m_vecViewAngles = Angle(0, circleStrafeYaw, 0)
+		for i = 1, #angularVelocities do
+			local angularVelocity = angularVelocities[i]
+
+			local moveData = InitializeMoveData(me, cmd, moveDataCache[i])
+			moveData.timeUntilTimeout = simTime
+			moveData.deltaTime = TICK_INTERVAL
+			moveData.idealYawDelta = angularVelocity
+			moveData.maxSpeedLoss = speed2d * 0.5
+			moveData.m_vecViewAngles = m_vecViewAngles
+
+			moveDataCache[i] = moveData
+		end
+
+		return moveDataCache
+	end
+
+	-- Bugged zones go here
+	local MAP_AVOIDED_ZONES = {
+		["rp_bangclaw"] = {
+			-- Water shit
+			{mins = Vector(-1011.354492, -2315.062500, -379.469147), maxs = Vector(-328.926392, -1405.410767, 1618.861328)},
+
+			-- Subway entrance
+			{mins = Vector(2862.246094, -3892.602539, -205.682663), maxs = Vector(3365.378662, -3623.068359, 466.894409)},
+
+			-- Desert short corridor thing
+			{mins = Vector(10648.275391, -4314.236328, 60), maxs = Vector(10752.227539, -2346.496826, 1063.019043)}
+		}
+	}
+
+	local avoidedZones = MAP_AVOIDED_ZONES[game.GetMap()]
+	local function IsInZone(zone, pos)
+		local mins, maxs = zone.mins, zone.maxs
+		local xIn = pos.x > mins.x and pos.x < maxs.x
+		local yIn = pos.y > mins.y and pos.y < maxs.y
+		local zIn = pos.z > mins.z and pos.z < maxs.z
+		return xIn and yIn and zIn
+	end
+
+	local function ChooseBestAngularVelocity(angularVelocities, moveDatas, simTime, pos, speed2d)
+		local bestAngularVelocityValid = false
+		local bestAngularVelocity = nil
+		local bestAngularVelocityDeltaSpeed = -math.huge
+		local bestAngularVelocityDuration = 0
+		local bestAngularVelocityTicks = nil
+
+		samoware.StartThreadedSimulation(moveDatas)
+
+		-- Wait for aimbot
+		coroutine.yield()
+
+		local results = samoware.FinishThreadedSimulation(#moveDatas)
+
+		do
+			hook.Add("PostDrawTranslucentRenderables", "dbg", function()
+				surface.SetDrawColor(color_white)
+				for i = 1, #results do
+					local ticks = results[i]
+					for j = 1, #ticks - 1 do
+						local curTick, nextTick = ticks[j], ticks[j + 1]
+						--debugoverlay.Line(curTick.m_vecAbsOrigin, nextTick.m_vecAbsOrigin, TICK_INTERVAL * 2, color_white, true)
+						render.DrawLine(curTick.m_vecAbsOrigin, nextTick.m_vecAbsOrigin, color_white, false)
+					end
+				end
+			end)
+		end
+
+		for i = 1, #results do
+			local angularVelocity = angularVelocities[i]
+
+			local ticks = results[i]
+			local lastTick = ticks[#ticks]
+
+			local isValid = lastTick.timeUntilTimeout > 0
+			local deltaSpeed = lastTick.m_vecVelocity:Length2D() - speed2d
+
+			-- Check if simulation ended up in avoided zone
+			if avoidedZones and isValid then
+				local endPos = lastTick.m_vecAbsOrigin
+				for i = 1, #avoidedZones do
+					isValid = isValid and !IsInZone(avoidedZones[i], endPos)
+				end
+			end
+
+			-- isValid = isValid and lastTick.m_vecAbsOrigin.z > (400)
+
+
+			if !bestAngularVelocity then
+				bestAngularVelocityValid = isValid
+				bestAngularVelocity = angularVelocity
+				bestAngularVelocityDeltaSpeed = deltaSpeed
+				bestAngularVelocityDuration = simTime - lastTick.timeUntilTimeout
+				bestAngularVelocityTicks = ticks
+			elseif isValid then
+				if deltaSpeed > bestAngularVelocityDeltaSpeed then
+					bestAngularVelocityValid = true
+					bestAngularVelocity = angularVelocity
+					bestAngularVelocityDeltaSpeed = deltaSpeed
+					bestAngularVelocityDuration = simTime - lastTick.timeUntilTimeout
+					bestAngularVelocityTicks = ticks
+				end
+			else
+				if !bestAngularVelocityValid and deltaSpeed > bestAngularVelocityDeltaSpeed then
+					bestAngularVelocityValid = false
+					bestAngularVelocity = angularVelocity
+					bestAngularVelocityDeltaSpeed = deltaSpeed
+					bestAngularVelocityDuration = simTime - lastTick.timeUntilTimeout
+					bestAngularVelocityTicks = ticks
+				end
+			end
+		end
+
+		return bestAngularVelocityValid,
+				bestAngularVelocity,
+				bestAngularVelocityDeltaSpeed,
+				bestAngularVelocityDuration,
+				bestAngularVelocityTicks
+	end
+
+	local bestAngularVelocityValid = false
+	local bestAngularVelocity = nil
+	local bestAngularVelocityDeltaSpeed = -math.huge
+	local bestAngularVelocityDuration = 0
+	local bestAngularVelocityDurationTicks = nil
+	local bestAngularVelocityDurationTickCount = 0
+	local circleStrafeYaw = nil
+	local function CircleStrafe(cmd)
+		local numJobs = settings.Misc["CStrafe jobs"]
+		local simTime = settings.Misc["CStrafe sim time"]
+
+		local pos = me:GetPos()
+		local velocity = me:GetVelocity()
+		local velocityYaw = math.deg(math.atan2(velocity.y, velocity.x))
+		local speed, speed2d = velocity:Length(), velocity:Length2D()
+
+		if !circleStrafeYaw then
+			circleStrafeYaw = math.deg(math.atan2(velocity.y, velocity.x))
+		end
+
+		local possiblePaths = GetPossiblePaths(numJobs, 5, pos, velocity, velocityYaw, speed2d)
+		local angularVelocities = CalculateAngularVelocities(possiblePaths, circleStrafeYaw, pos, velocity, velocityYaw, speed2d)
+		local moveDatas = CreateMovementData(angularVelocities, simTime, speed2d, cmd, circleStrafeYaw)
+		local isValid, angularVelocity, deltaSpeed, duration, ticks = ChooseBestAngularVelocity(angularVelocities, moveDatas, simTime, pos, speed2d)
+
+		local notNil = angularVelocity != nil -- TODO: FIX THIS
+		local justInitialized = !bestAngularVelocity
+		local valid = !bestAngularVelocityValid and isValid
+		local betterBySpeed = (deltaSpeed - bestAngularVelocityDeltaSpeed) > -5
+		local longer = duration > bestAngularVelocityDuration
+		local expired = bestAngularVelocityDuration <= 0
+		local simulationError = false
+		do
+			local tickRel = engine.TickCount() - bestAngularVelocityDurationTickCount
+			if bestAngularVelocityDurationTicks and tickRel > 0 then
+				local curTick = bestAngularVelocityDurationTicks[tickRel]
+				if curTick then -- Not expired?
+					local posDiff = pos:Distance(curTick.m_vecAbsOrigin)
+					simulationError = posDiff > 5
+				end
+			end
+		end
+
+		if notNil and (justInitialized or valid or (isValid and longer and betterBySpeed) or expired or simulationError) then
+			do
+				local causes = {}
+				if justInitialized then							causes[#causes + 1] = "INIT" end
+				if valid then									causes[#causes + 1] = "VALID" end
+				if (isValid and longer and betterBySpeed) then	causes[#causes + 1] = "DUR&SPD" end
+				if expired then									causes[#causes + 1] = "EXPIRED" end
+				if simulationError then							causes[#causes + 1] = "SIMERR" end
+
+				print("New path:", ("%.1f %s"):format(angularVelocity, table.concat(causes, ",")))
+			end
+
+			bestAngularVelocityValid = isValid
+			bestAngularVelocity = angularVelocity
+			bestAngularVelocityDeltaSpeed = deltaSpeed
+			bestAngularVelocityDuration = duration
+			bestAngularVelocityDurationTicks = ticks
+			bestAngularVelocityDurationTickCount = engine.TickCount()
+		end
+
+		if !bestAngularVelocity then
+			print("NO bestAngularVelocity!!!!!!!!!!!!!!")
+
+			-- Restore initial state
+			bestAngularVelocityValid = false
+			bestAngularVelocity = 0
+			bestAngularVelocityDeltaSpeed = -math.huge
+			bestAngularVelocityDuration = 0
+			bestAngularVelocityDurationTicks = 0
+			bestAngularVelocityDurationTickCount = 0
+		end
+
+		-- Decrease current angular velocity duration
+		bestAngularVelocityDuration = bestAngularVelocityDuration - TICK_INTERVAL
+		circleStrafeYaw = math.NormalizeAngle(circleStrafeYaw + bestAngularVelocity)
+
+		/*
+		local sideMove
+		if math.abs(bestAngularVelocity) < 1e-3 then
+			sideMove = 0
+		else
+			sideMove = bestAngularVelocity > 0 and -5250 or 5250
+		end
+
+		cmd:AddKey(IN_SPEED)
+		cmd:SetSideMove(sideMove)
+		FixMove(cmd, Angle(0, circleStrafeYaw, 0))
+		*/
+	end
+
+	local circleStrafeCoro = coroutine.create(function(cmd)
+		while true do
+			CircleStrafe(cmd)
+			coroutine.yield()
+		end
+	end)
+
+	local function AwaitThread(cmd)
+		local succ, err = coroutine.resume(circleStrafeCoro, cmd)
+		if !succ then
+			error(debug.traceback(circleStrafeCoro, err))
+		end
+	end
+
+	function StartCircleStrafe(cmd)
+		if !settings.Misc.CStrafe or !keybinds.Misc.CStrafeKey then
+			circleStrafeYaw = nil
+			return
+		end
+
+		-- Wake the loop yield
+		AwaitThread(cmd)
+	end
+
+	function FinishCircleStrafe(cmd)
+		if !settings.Misc.CStrafe or !keybinds.Misc.CStrafeKey then
+			circleStrafeYaw = nil -- Recalculate velocity yaw
+			bestAngularVelocity = nil -- Initialize new angular velocity
+			return
+		end
+
+		-- Wake ChooseBestAngularVelocity yield
+		AwaitThread(cmd)
+
+		if !bestAngularVelocity then
+			return
+		end
+
+		local sideMove
+		if math.abs(bestAngularVelocity) < 1e-3 then
+			sideMove = 0
+		else
+			sideMove = bestAngularVelocity > 0 and -5250 or 5250
+		end
+
+		cmd:AddKey(IN_SPEED)
+		cmd:SetForwardMove(0)
+		cmd:SetSideMove(sideMove)
+		FixMove(cmd, Angle(0, circleStrafeYaw, 0))
+	end
+
+	AddHook("PostDrawTranslucentRenderables", function(bDrawingDepth, bDrawingSkybox, isDraw3DSkybox)
+		if bDrawingSkybox or isDraw3DSkybox then return end
+
+		render.SetColorMaterial()
+
+		-- Draw simulated ticks
+		if bestAngularVelocityDurationTicks then
+			local colorGood = Color(0, 255, 0)
+			local colorBad = Color(255, 0, 0)
+			local pathColor = bestAngularVelocityValid and colorGood or colorBad
+
+			for i = 1, #bestAngularVelocityDurationTicks - 1 do
+				local curTick = bestAngularVelocityDurationTicks[i]
+				local nextTick = bestAngularVelocityDurationTicks[i + 1]
+				render.DrawBeam(curTick.m_vecAbsOrigin, nextTick.m_vecAbsOrigin, 2, 0, 1, pathColor)
+			end
+		end
+
+		-- Draw avoided zones
+		if avoidedZones then
+			cam.IgnoreZ(true)
+
+			for i = 1, #avoidedZones do
+				local zone = avoidedZones[i]
+				local mins, maxs = zone.mins, zone.maxs
+				local origin = mins + (maxs - mins) * 0.5
+				local minsLocal = maxs - origin
+				local maxsLocal = mins - origin
+
+				local distance = me:GetPos():Distance(origin)
+				local alpha = math.Clamp((2000 - distance) / 2000 * 125, 0, 125)
+
+				local color = Color(215, 0, 0, alpha)
+				render.DrawBox(origin, angle_zero, minsLocal, maxsLocal, color)
+			end
+
+			cam.IgnoreZ(false)
+		end
+	end)
 end
 
 local killrow_messages = {
@@ -3969,7 +5033,7 @@ local killrow_messages = {
 		"%s ого ты лох",
 		"%s loshara",
 		"%s гг изи",
-		"%s слабый ты слабый)",
+		"%s слkбый ты слабый)",
 		"%s ого соснул",
 		"%s ахах хдд соснул пздц",
 		"лоол рили %s)",
@@ -4024,10 +5088,10 @@ local killrow_messages = {
 		"try not to die next time, %s!",
 	},
 	["Opezdal"] = {
-	
+
 	},
 	["Unizhenie"] = {
-	
+
 	},
 	["Russian HvH"] = {
 		"хуевый ресолвер",
@@ -4096,7 +5160,60 @@ local killrow_messages = {
 		"ебать тебя унесло",
 		"ой нищий упал щас скорую вызовем",
 		"научи потом как так сосать на хвх",
-		"нихуя ты там как самолет отлетел"
+		"нихуя ты там как самолет отлетел",
+
+		-- Vovse ne sp1zd1l
+		"Найс софт чел без читов ты 0",
+		"Чел ты без читов 0",
+		"Го 1 на 1 или зассал?Точно ты же до 1 считать не умееш...",
+		"Мы в НОНРП Зоне как бы да чел отлетаеш",
+		"Найс баг абуз чел папа жива?",
+		"Ало скорая тут такой случай шкiла упала в месорубку",
+		"Откисай молодой!",
+		"говори буду плохо говорить буду сосать, буду плохо сосать буду пересасывать",
+		"долбаеб иди башмачки в сундучок школьный собирай",
+		"ботинок ебаный чо слетел",
+		"братик маме привет передай",
+		"не противник",
+		"а ты че клоун???",
+		"я обоссал тебя (",
+		"ты че там отлетел то?",
+		"Я твою маму дуже сильно поважаю , нехай береже її Степан Бендера",
+		"упал хуета ебаная , но в боди забрал да похуй все равно упал",
+		"ливай с хвх (",
+		"до связи башмак",
+		"нищета глупейшая играть учись",
+		"опущен сын твари",
+		"сразу видно кфг иссуе мб конфиг у меня прикупишь ?",
+		"животное аддон скачай а то падаешь",
+		"оттарабанен армянская королева",
+		"сука не позорься и ливни",
+		"улетел тапочек ебаный",
+		"единицей свалился фуфлыжник",
+		"Вот тебе паяльник , запаяй себе ебальник",
+		"зачем ты играешь тут безмозглый", "иди кумыса попей очередняра",
+		"Ты как кофе , 3 в одном - пидр , чмошник и гандон",
+		"откисай сочняра",
+		"АХАХА ЕБАТЬ У ТЕБЯ ЧЕРЕПНАЯ КОРОБКА ПРЯМ КАК [XML-RPC] No-Spread 24/7 | aim_ag_texture_2 ONLY!",
+		"на мыло и веревку то деньги есть????",
+		"ИЩИ СЕБЯ НА pornoeb.cc/so4niki",
+		"свежий кабанчик",
+		"до связи на подскоке кабанчик",
+		"скажи маме сухарики купить долбаеб",
+		"ебать ты красиво на бутылку присел , тебе дать альт ?",
+		"Извини дорогая , не хотел на лицо",
+		"прости что без смазки)",
+		"алло это скорая? тут такая ситуация парню который упал нужна скорая)",
+		"ало ты мапу лузаешь , дура очнись",
+		"ЕБУЧЕСТЬ ВТОРОГО РАЗРЯДА ВЫДВИЖЕНЕЦ ОТКИС",
+		"але , а противники то где???",
+		"ты по легиту играешь ?",
+		"ХУЕПРЫГАЛО ТУСОВОЧНОЕ КУДА ПОЛЕТЕЛО",
+		"ты куда жертва козьего аборта",
+		"iq?", "·٠●•۩۞۩ОтДыХаЙ (ٿ) НуБяРа۩۞۩•●٠·",
+		"ты то куда лезешь сын фантомного стационарного спец изолированого металлформовочного механизма",
+		"╭∩╮( ⚆ ʖ ⚆)╭∩╮ ДоПрыГался(ت)ДрУжоЧеК",
+		"Тебе в ротик или на животик ?"
 	},
 	["English HvH"] = {
 		"Bro imagine resolving in gmod",
@@ -4249,10 +5366,10 @@ do
 				table.insert(killrow_messages["Opezdal"], v)
 			end
 		end
-		
+
 		print(#killrow_messages["Opezdal"], "Opezdals loaded")
 	end
-	
+
 	local unizh = file.Read("menuhook/lolmems.txt", "MOD")
 	if unizh then
 		for k, v in ipairs(unizh:Split("\n")) do
@@ -4260,11 +5377,15 @@ do
 				table.insert(killrow_messages["Unizhenie"], v)
 			end
 		end
-		
+
 		print(#killrow_messages["Unizhenie"], "Unizhalok loaded")
 	end
 end
 --]]
+
+do
+
+local hitboxes = {}
 
 gameevent.Listen("entity_killed")
 AddHook("entity_killed", function(data)
@@ -4273,22 +5394,67 @@ AddHook("entity_killed", function(data)
 		if settings.Misc.KillSound then
 			surface.PlaySound("buttons/" .. settings.Misc.KillSoundSnd .. ".wav")
 		end
-		
+
 		if settings.Misc["Chat killrow"] then
 			local msgs = killrow_messages[settings.Misc.KillrowMode]
 			local msg = msgs[mrandom(#msgs)]
 			if msg:find("%s") then
 				msg = msg:format(victim:Nick())
 			end
-			
+
 			if DarkRP then
 				msg = "/ooc " .. msg
 			end
-			
+
 			RunConsoleCommand("say", msg)
 		end
 	end
+
+	if /*attacker:IsPlayer() and*/ victim == me then
+		local hitboxData = {}
+		for hitboxGroupId = 0, me:GetHitboxSetCount() - 1 do
+			for hitboxId = 0, me:GetHitBoxCount(hitboxGroupId) - 1 do
+				local boneId = me:GetHitBoxBone(hitboxId, hitboxGroupId)
+				local boneMat = me:GetBoneMatrix(boneId)
+				local bonePos = boneMat:GetTranslation()
+				local boneAng = boneMat:GetAngles()
+
+				local mins, maxs = me:GetHitBoxBounds(hitboxId, hitboxGroupId)
+
+				hitboxData[#hitboxData + 1] = {
+					pos = bonePos,
+					angles = boneAng,
+					mins = mins, maxs = maxs
+				}
+			end
+		end
+
+		hitboxes[#hitboxes + 1] = {
+			createdTime = CurTime(),
+			hitboxData = hitboxData
+		}
+	end
 end)
+
+AddHook("PostDrawOpaqueRenderables", function()
+	render.SetColorMaterial()
+
+	local curTime = CurTime()
+	for i = #hitboxes, 1, -1 do
+		local hitboxSet = hitboxes[i]
+		if (curTime - hitboxSet.createdTime) > 5 then
+			table.remove(hitboxes, i)
+			continue
+		end
+
+		for j = 1, #hitboxSet.hitboxData do
+			local hitboxData = hitboxSet.hitboxData[j]
+			render.DrawBox(hitboxData.pos, hitboxData.angles, hitboxData.mins, hitboxData.maxs)
+		end
+	end
+end)
+
+end
 
 gameevent.Listen("player_hurt")
 AddHook("player_hurt", function(data)
@@ -4296,6 +5462,16 @@ AddHook("player_hurt", function(data)
 	if attacker == me and victim != attacker then
 		if settings.Misc.HurtSound then
 			surface.PlaySound("buttons/" .. settings.Misc.HurtSoundSnd .. ".wav")
+		end
+
+		victim.sw_aim_shots = (victim.sw_aim_shots or 0) - 1
+
+		if settings.HvH.Resolver and (settings.HvH.ResolverMode == "StatAbs" or settings.HvH.ResolverMode == "StatRel") then
+			local yaw = math.floor(victim:GetRenderAngles().y)
+			victim.sw_resolve_stats[yaw] = victim.sw_resolve_stats[yaw] + 1
+
+			print(victim:Nick(), "STATS:")
+			PrintTable(victim.sw_resolve_stats)
 		end
 	end
 end)
@@ -4315,43 +5491,41 @@ local realfov = 2 * math.atan(math.tan(verticalfov * 0.5) * aspectratio) * 0.5
 
 local mtan = math.tan
 
--- local dmglogs = {}
-
 AddHook("HUDPaint", function()
 	if settings.Visuals.EnabledP then
 		ESP()
 	end
-	
+
 	if settings.Visuals["FOV cone"] then
 		local radius = (mtan(mrad(settings.Aimbot["FOV cone"]) * 0.5) / mtan(realfov)) * SCRW
-		
+
 		surface_SetDrawColor(color_white)
 		surface_DrawCircle(SCRW * 0.5, SCRH * 0.5, radius)
 	end
-	
+
 	local cw, ch = SCRW * 0.5, SCRH * 0.5
 	if settings.Visuals.Crosshair2D then
 		surface_SetDrawColor(crs_color)
 		surface_DrawRect(cw - length * 0.5, ch - thickness * 0.5, length, thickness)
 		surface_DrawRect(cw - thickness * 0.5, ch - length * 0.5, thickness, length)
 	end
-	
+
 	local y = 0
-	
+
 	local function DrawCenterText(text, color, font)
 		surface_SetTextColor(color)
 		surface_SetTextPos(cw, ch + y)
 		surface_SetFont("DebugFixed")
 		surface_DrawText(text)
-		
+
 		local _, th = surface_GetTextSize(text)
 		y = y + th
 	end
-	
+
 	if settings.Visuals.AimTarget and IsValid(aimply) then
 		DrawCenterText("TARGET: " .. aimply:Nick(), color_red, "DebugFixed")
 	end
-	
+
 	if settings.HvH.Warp or settings.HvH.Doubletap or settings.HvH["Warp on peek"] then
 		local text = "CHARGED"
 		local color
@@ -4365,7 +5539,7 @@ AddHook("HUDPaint", function()
 			color = color_red
 			text = "UNCHARGED"
 		end
-		
+
 		DrawCenterText(text, color, "DebugFixed")
 		DrawCenterText(("SHIFT %d (%d)"):format(ticksshifted, ticksshiftedtotal), color, "DebugFixed")
 	end
@@ -4375,29 +5549,33 @@ end
 
 AddHook("EntityFireBullets", function(ply, data)
 	local spread = data.Spread * -1
-	local weap = ply:GetActiveWeapon():GetClass()
+	local weap = ply:GetActiveWeapon()
 	if IsValid(weap) and spread != vector_origin then
-		weapcones[weap] = spread
+		weapcones[weap:GetClass()] = spread
 	end
 end)
 
 -- not needed for CHLClient createmove
-local gorigin
 AddHook("CalcView", function(_, origin, angles)
-	gorigin = origin
-	
 	local thirdperson = settings.Visuals.Thirdperson and keybinds.Visuals.ThirdpersonKey
-	if !thirdperson then return end
-	
+
 	local view = {}
 	view.drawviewer = thirdperson
 	view.angles = settings.Aimbot.Silent and silentangles or angles
 	if thirdperson then
-		view.origin = origin - ((settings.Aimbot.Silent and silentangles or angles):Forward() * settings.Visuals.ThirdpersonDist)
+		local cameraPos = origin - ((settings.Aimbot.Silent and silentangles or angles):Forward() * settings.Visuals.ThirdpersonDist)
+		local trace = TraceLine({
+			start = origin,
+			endpos = cameraPos,
+			filter = me,
+			mask = MASK_OPAQUE
+		})
+
+		view.origin = trace.HitPos
 	end
 
 	view.fov = settings.Visuals.Fov
-	
+
 	return view
 end)
 
@@ -4417,7 +5595,7 @@ local drawing = false
 AddHook("PreDrawViewModel",  function(vm, ply, weap)
 	local fov = settings.Visuals["Viewmodel fov"]
 	if ply != me or fov == 75 or drawing then return end
-	
+
 	cam.IgnoreZ(true)
 	cam.Start3D(nil, nil, fov)
 	drawing = true
@@ -4425,7 +5603,7 @@ AddHook("PreDrawViewModel",  function(vm, ply, weap)
 	drawing = false
 	cam.End3D()
 	cam.IgnoreZ(false)
-	
+
 	return true
 end)
 
@@ -4441,25 +5619,81 @@ local realangcolor = Color(238, 158, 29)
 local fakeangcolor = Color(22, 196, 187)
 local lbyangcolor = Color(25, 56, 231)
 
+local bulletImpacts = {}
+local numBulletImpacts = 0
+local numPlayerHurts = 0
+samoware.AddHook("OnImpact", "samoware", function(data)
+	local bestPlayer = nil
+	local bestDistance = math.huge
+	for _, ply in ipairs(player.GetAll()) do
+		local distance = ply:EyePos():DistToSqr(data.m_vStart)
+		if distance < bestDistance then
+			bestPlayer = ply
+			bestDistance = distance
+		end
+	end
+
+	bulletImpacts[#bulletImpacts + 1] = {
+		shootTime = CurTime(),
+		attacker = bestPlayer,
+
+		startPos = data.m_vStart,
+		endPos = data.m_vOrigin,
+		hitbox = data.m_nHitbox,
+	}
+
+	if bestDistance < 128 then
+		if bestPlayer == me then
+			numBulletImpacts = numBulletImpacts + 1
+		else
+			bestPlayer.sw_backshoot_data = {
+				headPos = bestPlayer.sw_cur_headpos,
+				simTime = bestPlayer.sw_cur_simtime
+			}
+		end
+	end
+end)
+
+hook.Remove("CreateMove", "testim", function(cmd)
+	if cmd:CommandNumber() == 0 then return end
+	print(Entity(2):EyeAngles())
+end)
+
+gameevent.Listen("player_hurt")
+AddHook("player_hurt", function(data)
+	local victim, attacker = Player(data.userid), Player(data.attacker)
+	if attacker == me and victim != attacker then
+		numPlayerHurts = numPlayerHurts + 1
+	end
+end)
+
+AddHook("HUDPaint", function()
+	if !settings.Visuals.HitMiss then return end
+
+	draw.SimpleText(("Hits: %d"):format(numPlayerHurts), "TargetID", 0, 128)
+	draw.SimpleText(("Shots: %d"):format(numBulletImpacts), "TargetID", 0, 128 + 14)
+	draw.SimpleText(("Hit/Miss: %.1f%%"):format(numPlayerHurts / numBulletImpacts * 100), "TargetID", 0, 128 + 14 * 2)
+end)
+
 AddHook("PostDrawOpaqueRenderables", function()
 	if settings.Visuals.AntiAimChams and settings.Visuals.Thirdperson and keybinds.Visuals.ThirdpersonKey then
 		render.MaterialOverride(chamsmat)
-		
+
 		UpdateFakeModel(fakemodel, fakeangles)
 		UpdateFakeModel(realmodel, realangles)
-		
+
 		local rl = realmodel.model
 		local fk = fakemodel.model
 
 		render.SetColorModulation(0.95, 0.61, 0.07)
 		rl:DrawModel()
-		
+
 		render.SetColorModulation(0.15, 0.61, 0.57)
 		fk:DrawModel()
-		
+
 		render.MaterialOverride()
 	end
-	
+
 	if settings.Visuals.AntiAimLines then
 		local pos = me:GetPos()
 		cam.IgnoreZ(true)
@@ -4467,7 +5701,7 @@ AddHook("PostDrawOpaqueRenderables", function()
 			surface_SetDrawColor(realangcolor)
 			surface_DrawLine(0, 0, 25, 25)
 		cam.End3D2D()
-		
+
 		cam.Start3D2D(pos, Angle(0, fakeangles.y + 45, 0), 1)
 			surface_SetDrawColor(fakeangcolor)
 			surface_DrawLine(0, 0, 25, 25)
@@ -4481,63 +5715,77 @@ AddHook("PostDrawOpaqueRenderables", function()
 
 		cam.IgnoreZ(false)
 	end
-	
+
 	if settings.Visuals.Crosshair3D then
 		local tr = me:GetEyeTrace()
-		
+
 		cam.Start3D2D(tr.HitPos, tr.HitNormal:Angle() - Angle(90, 0, 0), 1)
 		surface.SetDrawColor(crs_color)
 		local SCRW, SCRH = ScrW(), ScrH()
 		local cw, ch = SCRW * 0.5, SCRH * 0.5
-		
+
 		surface_SetDrawColor(crs_color)
 		surface_DrawRect(-length * 0.5, -thickness * 0.5, length, thickness)
 		surface_DrawRect(-thickness * 0.5, -length * 0.5, thickness, length)
 		cam.End3D2D()
 	end
-	
+
 	if settings.Visuals.Tracers then
 		for k, v in ipairs(player.GetAll()) do
 			if v == me then continue end
-			
+
 			local tr = v:GetEyeTrace()
 			local start, hitpos = tr.StartPos, tr.HitPos
-			
+
 			render.DrawLine(start, hitpos)
+		end
+	end
+
+	if settings.Visuals.BulletTracers then
+		local curTime = CurTime()
+		local dieTime = settings.Visuals["Tracers die time"]
+		for i = #bulletImpacts, 1, -1 do
+			local impact = bulletImpacts[i]
+			if (curTime - impact.shootTime) > dieTime then
+				table.remove(bulletImpacts, i)
+				continue
+			end
+
+			render.DrawLine(impact.startPos, impact.endPos, color_white, true)
 		end
 	end
 end)
 
 AddHook("HUDPaint", function()
 	if !settings.Visuals.AntiAimLines then return end
-	
+
 	local rl, fk, lby = Angle(0, realangles.y, 0), Angle(0, fakeangles.y, 0), Angle(0, samoware.GetCurrentLBY(me:EntIndex()), 0)
-	
+
 	local pos = me:GetPos()
 	local rlpos = (pos + rl:Forward() * 36):ToScreen()
 	local fkpos = (pos + fk:Forward() * 36):ToScreen()
 	local lbypos = (pos + lby:Forward() * 36):ToScreen()
-	
+
 	-- draw real
 	surface_SetFont("swcc_text_visualize")
-	
+
 	local tx, ty = surface_GetTextSize("real")
 	surface_SetTextPos(rlpos.x - tx * 0.5, rlpos.y - ty * 0.5)
-	
+
 	surface_SetTextColor(realangcolor)
 	surface_DrawText("real")
-	
+
 	-- draw fake
 	tx, ty = surface_GetTextSize("fake")
 	surface_SetTextPos(fkpos.x - tx * 0.5, fkpos.y - ty * 0.5)
-	
+
 	surface_SetTextColor(fakeangcolor)
 	surface_DrawText("fake")
 
 	-- draw LBY
 	tx, ty = surface_GetTextSize("LBY")
 	surface_SetTextPos(lbypos.x - tx * 0.5, lbypos.y - ty * 0.5)
-	
+
 	surface_SetTextColor(lbyangcolor)
 	surface_DrawText("LBY")
 end)
@@ -4552,7 +5800,7 @@ AddHook("PostDrawTranslucentRenderables", function()
 	if bSendPacket then
 		UpdateFakeModel(fakelagmodel)
 	end
-	
+
 	render.MaterialOverride(chamsmat_transparent)
 
 	if settings.Visuals.FakeLagChams and settings.Visuals.Thirdperson and keybinds.Visuals.ThirdpersonKey then
@@ -4560,21 +5808,32 @@ AddHook("PostDrawTranslucentRenderables", function()
 		render.SetColorModulation(0.25, 0.25, 0.7)
 		fakelagmodel.model:DrawModel()
 	end
-	
+
 	render.MaterialOverride()
 end)
 
 end
 
 do
-	for k, v in ipairs(player.GetAll()) do
-		v.sw_prev_pos = Vector()
-		v.sw_cur_pos = v:GetPos()
-		
-		v.sw_cur_simtime = 0 -- samoware.GetSimulationTime(v:EntIndex())
-		v.sw_prev_simtime = 0
-		
-		v.sw_aim_shots = 0
+	for _, ply in ipairs(player.GetAll()) do
+		ply.sw_prev_pos = Vector()
+		ply.sw_cur_pos = ply:GetPos()
+
+		ply.sw_prev_ang = Angle()
+		ply.sw_cur_ang = ply:EyeAngles()
+
+		ply.sw_prev_headpos = Vector()
+		ply.sw_cur_headpos = GetBone(ply, "Center", "Head")[1]
+
+		ply.sw_cur_simtime = samoware.GetSimulationTime(ply:EntIndex())
+		ply.sw_prev_simtime = 0
+
+		ply.sw_aim_shots = 0
+
+		ply.sw_resolve_stats = {}
+		for i = -180, 180, 45 do
+			ply.sw_resolve_stats[i] = 1
+		end
 	end
 end
 
@@ -4582,9 +5841,20 @@ gameevent.Listen("player_spawn")
 AddHook("player_connect_client", function(ply)
 	ply.sw_prev_pos = Vector()
 	ply.sw_cur_pos = v:GetPos()
-	
-	ply.sw_cur_simtime = 0 --samoware.GetSimulationTime(v:EntIndex())
+
+	ply.sw_prev_ang = Angle()
+	ply.sw_cur_ang = ply:EyeAngles()
+
+	ply.sw_prev_headpos = Vector()
+	ply.sw_cur_headpos = GetBone(ply, "Center", "Head")[1]
+
+	ply.sw_cur_simtime = samoware.GetSimulationTime(v:EntIndex())
 	ply.sw_prev_simtime = 0
+
+	ply.sw_resolve_stats = {}
+	for i = -180, 180, 45 do
+		ply.sw_resolve_stats[i] = 1
+	end
 end)
 
 do
@@ -4693,17 +5963,17 @@ local c_cl_extrapolate = GetConVar("cl_extrapolate")
 local c_cl_interp = GetConVar("cl_interp")
 local c_cl_interp_ratio = GetConVar("cl_interp_ratio")
 AddHook("Think", function()
-	aaply = GetPlayers(settings.HvH["AA ply mode"], 0, 1, true)
+	aaply = GetPlayers(settings.HvH["AA ply mode"], 0, 1, false)
 	if aaply then
 		aaply = aaply[1][1]
 	end
-	
+
 	if settings.Misc.FpsBoost then
 		if !fps_boosted then
 			for k, v in pairs(boost_cvars) do
 				RunConsoleCommand(k, v)
 			end
-			
+
 			fps_boosted = true
 			fps_notboosted = false
 		end
@@ -4712,54 +5982,54 @@ AddHook("Think", function()
 			for k, v in pairs(old_cvars) do
 				RunConsoleCommand(k, v)
 			end
-			
+
 			fps_boosted = false
 			fps_notboosted = true
 		end
 	end
-	
+
 	if settings.Aimbot.FixErrors then
-		--for k, v in ipairs(player.GetAll()) do
+	--for k, v in ipairs(player.GetAll()) do
 		--	if v:GetModel() == "models/error.mdl" then
 		--		v:SetModel("models/player/breen.mdl")
 		--	end
 		--end
 	end
-	
+
 	if settings.Misc.AutoNavalny and CurTime() > nextnavalny then
 		RunConsoleCommand("say", navalnytext[navalnyidx + 1])
 		navalnyidx = (navalnyidx + 1) % #navalnytext
 		nextnavalny = CurTime() + 1
 	end
-	
+
 	if settings.HvH["Dance"] and me:Alive() and !me:IsPlayingTaunt() and CurTime() > nextact then
 		local act = settings.HvH["DanceMode"]
 		if act == "random" then
 			act = dancemodes[mrandom(2, #dancemodes)]
 		end
-		
+
 		RunConsoleCommand("act", act)
 		nextact = CurTime() + 0.3
 	end
-	
+
 	if settings.HvH.Cvar3 then
 		local net_fakelag = 0
 		local net_fakejitter = 0
 		local net_fakeloss = 0
 		local host_timescale = 1
-		
+
 		if settings.HvH["Manip. enabled"] then
 			net_fakelag = settings.HvH.net_fakelag
 			net_fakejitter = settings.HvH.net_fakejitter
 			net_fakeloss = settings.HvH.net_fakeloss
 			host_timescale = settings.HvH.host_timescale
 		end
-		
+
 		c_net_fakelag:SetValue(net_fakelag)
 		c_net_fakejitter:SetValue(net_fakejitter)
 		c_net_fakeloss:SetValue(net_fakeloss)
 		c_host_timescale:SetValue(host_timescale)
-		
+
 		if settings.HvH.NoInterp then
 			c_cl_extrapolate:SetValue(0)
 			samoware.SetEnableInterpolation(false)
@@ -4768,7 +6038,7 @@ AddHook("Think", function()
 			samoware.SetEnableInterpolation(true)
 		end
 	end
-	
+
 end)
 
 local mats = {}
@@ -4781,26 +6051,26 @@ end
 local drawing = false
 AddHook("PreDrawPlayerHands", function(hands, vm, ply, weapon)
 	if drawing or ply != me or !IsValid(hands) then return end
-	
+
 	local mat = settings.Visuals.HandChams
 	if mat == "None" then
 		return
 	else
 		mat = "models/" .. mat
 	end
-	
+
 	local color = colors.handchams
 	local r, g, b = color.r / 255, color.g / 255, color.b / 255
-	
+
 	render.MaterialOverride(mats[mat])
 	render.SetColorModulation(r, g, b)
-	
+
 	drawing = true
 	hands:DrawModel()
 	drawing = false
-	
+
 	render.MaterialOverride()
-	
+
 	return true
 end)
 
@@ -4816,38 +6086,39 @@ local FRAME_NET_UPDATE_END = 4
 local FRAME_RENDER_START = 5
 local FRAME_RENDER_END = 6
 
-local backtrackrecords = {}
+local backtrackRecords = {}
 
 local function BacktrackRecord(ply)
+	/*
 	local deadtime = CurTime() - settings.HvH.BacktrackAmount / 1000
-	
-	local records = backtrackrecords[ply]
+
+	local records = backtrackRecords[ply]
 	if !records then
 		records = {}
-		backtrackrecords[ply] = records
+		backtrackRecords[ply] = records
 	end
-	
+
 	local i = 1
 	while i < #records do
 		local record = records[i]
-		
+
 		if record.simulationtime < deadtime then
 			table.remove(records, i)
 			i = i - 1
 		end
-		
+
 		i = i + 1
 	end
-	
+
 	if !ply:Alive() then return end
-	
+
 	local simulationtime = samoware.GetSimulationTime(ply:EntIndex())
 	local len = #records
 	local simtimechanged = true
 	if len > 0 then
 		simtimechanged = records[len].simulationtime < simulationtime
 	end
-	
+
 	if ply.sw_cur_pos:DistToSqr(ply.sw_prev_pos) < 4096 and simtimechanged then
 		local layers = {}
 		for i = 0, 13 do
@@ -4859,7 +6130,7 @@ local function BacktrackRecord(ply)
 				}
 			end
 		end
-		
+
 		records[len + 1] = {
 			simulationtime = samoware.GetSimulationTime(ply:EntIndex()),
 			angles = ply:GetAngles(),
@@ -4871,6 +6142,7 @@ local function BacktrackRecord(ply)
 			layers = layers
 		}
 	end
+	*/
 end
 
 local nulAng = Angle(0, 0, 0)
@@ -4881,25 +6153,31 @@ samoware.AddHook("PostFrameStageNotify", "samoware", function(stage)
 			if !v.sw_last_dormant then
 				v.sw_last_dormant = 0
 			end
-			
+
 			if v == me then
 				continue
 			elseif v:IsDormant() and v.sw_last_dormant == 0 then
 				v.sw_last_dormant = realtime
 				continue
 			end
-			
+
 			if !v:IsDormant() then
 				v.sw_last_dormant = 0
 			end
-			
-			v.sw_prev_pos = v.sw_cur_pos
-			v.sw_cur_pos = v:GetNetworkOrigin()
-			
+
 			if settings.HvH.Backtrack then BacktrackRecord(v) end
-			
+
 			local cur_simtime = samoware.GetSimulationTime(v:EntIndex())
 			if v.sw_cur_simtime != cur_simtime then
+				v.sw_prev_pos = v.sw_cur_pos
+				v.sw_cur_pos = v:GetNetworkOrigin()
+
+				v.sw_prev_ang = v.sw_cur_ang
+				v.sw_cur_ang = v:EyeAngles()
+
+				v.sw_prev_headpos = v.sw_cur_headpos
+				v.sw_cur_headpos = GetBone(v, "Center", "Head")[1]
+
 				v.sw_prev_simtime = v.sw_cur_simtime
 				v.sw_cur_simtime = cur_simtime
 			end
@@ -4907,36 +6185,115 @@ samoware.AddHook("PostFrameStageNotify", "samoware", function(stage)
 	elseif stage == FRAME_RENDER_START then
 		for k, v in ipairs(player.GetAll()) do
 			if v == me or v:IsDormant() or !v.sw_cur_pos or !v.sw_prev_pos then continue end
-			
+
 			-- extrapolate noobs breaking lc
-			if settings.HvH.LagFix and v.sw_cur_pos:DistToSqr(v.sw_prev_pos) > 4096 then
-				local predTime = samoware.GetLatency(0) + samoware.GetLatency(1) + v:Ping() / 1000
-				local predPos = v.sw_cur_pos + v:GetVelocity() * predTime
-				
-				local tr = TraceHull({
-					start = v.sw_cur_pos,
-					endpos = predPos,
-					filter = v,
-					mask = MASK_PLAYERSOLID,
-					mins = v:OBBMins(),
-					maxs = v:OBBMaxs()
-				})
-				
-				predPos = tr.HitPos
-				
-				v:SetRenderOrigin(predPos)
-				v:SetNetworkOrigin(predPos)
+			if false then --settings.HvH.LagFix and v.sw_cur_pos:DistToSqr(v.sw_prev_pos) > 4096 then
+				local predTime = samoware.GetLatency(0) + samoware.GetLatency(1)
+				samoware.StartSimulation(v:EntIndex())
+
+				for tick = 1, TIME_TO_TICKS(predTime) do
+					samoware.SimulateTick()
+				end
+
+				local data = samoware.GetSimulationData()
+				v:SetRenderOrigin(data.m_vecAbsOrigin)
+				v:SetNetworkOrigin(data.m_vecAbsOrigin)
+
+				samoware.FinishSimulation()
+			elseif settings.HvH.Forwardtrack then
+				local predTime = (samoware.GetLatency(0) + samoware.GetLatency(1)) * settings.HvH.ForwardtrackAmount
+				samoware.StartSimulation(v:EntIndex())
+
+				local prevPos = v:GetNetworkOrigin()
+				for tick = 1, TIME_TO_TICKS(predTime) do
+					samoware.SimulateTick()
+
+					local data = samoware.GetSimulationData()
+					debugoverlay.Line(prevPos, data.m_vecAbsOrigin, 0.1, color_white, true)
+
+					prevPos  = data.m_vecAbsOrigin
+				end
+
+				local data = samoware.GetSimulationData()
+				v:SetRenderOrigin(data.m_vecAbsOrigin)
+				v:SetNetworkOrigin(data.m_vecAbsOrigin)
+
+				samoware.FinishSimulation()
 			end
-			
-			if settings.HvH.Resolver then
-				local deltas = {0, 45, -45, 180}
-				local angles = v:GetAngles()
-				angles.r = 0
-				
-				angles.y = mNormalizeAng(angles.y + deltas[v.sw_aim_shots % #deltas + 1])
-				
-				v:SetRenderAngles(angles)
-				v:SetNetworkAngles(angles)
+
+			if settings.HvH.Resolver and v.sw_aim_shots then
+				if settings.HvH.ResolverMode == "Absolute" or settings.HvH.ResolverMode == "Relative" then
+					local bruteforceAngles = {-90, 0, 90, 180, -180, 180, 90, 0, -90}
+					local headBruteforceAngles = {45, 0, -45}
+					local angles = Angle()
+					angles.y = bruteforceAngles[v.sw_aim_shots % #bruteforceAngles + 1]
+
+					if settings.HvH.ResolverMode == "Relative" then
+						angles.y = angles.y + v:EyeAngles().y
+					end
+
+					v:SetRenderAngles(angles)
+
+					if settings.HvH.ResolveFakePitch and v:EyeAngles().p > 90 then
+						v:SetPoseParameter("aim_pitch", -89)
+						v:SetPoseParameter("head_pitch", -89)
+					end
+
+					local headAngle = headBruteforceAngles[v.sw_aim_shots % #headBruteforceAngles + 1]
+					v:SetPoseParameter("aim_yaw", headAngle)
+					v:SetPoseParameter("head_yaw", headAngle)
+				elseif settings.HvH.ResolverMode == "StatAbs" or settings.HvH.ResolverMode == "StatRel" then
+					if !v.sw_resolve_stats then
+						v.sw_resolve_stats = {}
+						for i = -180, 180, 45 do
+							v.sw_resolve_stats[i] = 1
+						end
+					end
+
+					math.randomseed(v:EntIndex() + v.sw_aim_shots + 0xDEAD)
+
+					local weightSum = 0
+					for _, weight in pairs(v.sw_resolve_stats) do
+						weightSum = weightSum + weight
+					end
+
+					local sel = mrandom(weightSum)
+					local selYaw
+					for yaw, weight in pairs(v.sw_resolve_stats) do
+						sel = sel - weight
+						if sel <= 0 then
+							selYaw = yaw
+							break
+						end
+					end
+
+					local angles = Angle()
+					angles.r = 0
+					angles.y = selYaw
+
+					v:SetRenderAngles(angles)
+
+					if settings.HvH.ResolveFakePitch and v:EyeAngles().p > 90 then
+						v:SetPoseParameter("aim_pitch", -89)
+						v:SetPoseParameter("head_pitch", -89)
+					end
+
+					v:SetPoseParameter("aim_yaw", 0)
+					v:SetPoseParameter("head_yaw", 0)
+				end
+
+				-- Fix legs
+				local angles = v:GetRenderAngles()
+				local velocity = v:GetVelocity()
+				local velocityYaw = mNormalizeAng(angles.y - math.deg(math.atan2(velocity.y, velocity.x)))
+				local playbackRate = v:GetPlaybackRate()
+				local moveX = mcos(mrad(velocityYaw)) * playbackRate
+				local moveY = -msin(mrad(velocityYaw)) * playbackRate
+
+				v:SetPoseParameter("move_x", moveX)
+				v:SetPoseParameter("move_y", moveY)
+
+				v:InvalidateBoneCache()
 			end
 		end
 	end
@@ -4945,11 +6302,13 @@ end)
 end
 
 AddHook("PrePlayerDraw", function(ply)
-	if settings.HvH.ActResolver and ply != me then
+	if settings.HvH.ActResolver and (ply != me or settings.HvH.AA == "Anti BruteForce") then
+		ply.ChatGestureWeight = 0
+
 		for i = 0, 13 do
 			if ply:IsValidLayer(i) then
 				local seqname = ply:GetSequenceName(ply:GetLayerSequence(i))
-				if seqname:StartWith("taunt_") then
+				if seqname:StartWith("taunt_") or seqname:StartWith("gesture_") then
 					ply:SetLayerDuration(i, 0.001)
 					break
 				end
@@ -4985,10 +6344,10 @@ local function SetTyping(cmd)
 			net.WriteBool(true)
 			net.SendToServer()
 		end
-		
+
 		return
 	end
-	
+
 	samoware.SetTyping(cmd, true)
 end
 
@@ -5006,68 +6365,87 @@ end
 
 local prevang
 local autopistol = false
-AddHook("CreateMove", function(cmd)
-	if settings.Aimbot.Silent and !shiftingtickbase then
-		UpdateSilentAngles(cmd)
+
+local positions = {}
+hook.Add("HUDPaint", "dt", function()
+	surface.SetDrawColor(255, 255, 255)
+	for i = 1, #positions-1 do
+		local pos = positions[i]:ToScreen()
+		local prevpos = positions[i+1]:ToScreen()
+		surface.DrawRect(pos.x, pos.y, 4, 4)
+		surface.DrawLine(pos.x, pos.y, prevpos.x,prevpos.y)
 	end
 end)
 
-samoware.AddHook("OverrideCreateMove", "samoware", function(cmd)
+AddHook("CreateMove", function(cmd)
+	local shiftingTickbase = samoware.GetShiftingTickbase()
+	if settings.Aimbot.Silent and !shiftingTickbase then
+		UpdateSilentAngles(cmd)
+	end
+
 	if cmd:CommandNumber() == 0 then return end
-	
-	if !shiftingtickbase then
+
+	-- Reset cl_interp
+	if samoware.GetManipulateInterp() then
+		samoware.SetTargetInterp(0)
+	end
+
+	if !shiftingTickbase then
 		UpdateKeybinds()
 	else
-		-- enginepred.AdjustTickbase()
+		samoware.AdjustTickbase()
 	end
-	
+
 	bSendPacket = true
 	_R.bSendPacket = bSendPacket
-	
+
 	if !me:Alive() then return end
-	
+
 	if !prevang then
 		prevang = cmd:GetViewAngles()
 	end
-	
+
 	if settings.HvH["Break lagcomp"] then
 		SetBreakLagcompTicks()
 	end
-	
+
 	if settings.Misc.AutoStrafe then AutoStrafe(cmd) end
 	if settings.Misc.BunnyHop then BunnyHop(cmd) end
-	
+
 	if settings.HvH.Enginepred then samoware.StartPrediction(cmd) end
-	
+
+	positions[#positions+1] = me:GetPos()
+	if #positions > 66 then
+		table.remove(positions, 1)
+	end
+
 	if settings.HvH.FakeLag then
 		FakeLag(cmd)
 	else
 		fakelagtick = 0
 	end
-	
+
 	if settings.HvH["FakeLag in air"] then
 		FakeLagInAir(cmd)
 	end
-	
+
 	if settings.HvH["FakeLag on peek"] or settings.HvH["Warp on peek"] then
 		CheckPeeking()
 	end
-	
+
 	if settings.HvH.FakeDuck and keybinds.HvH.FakeDuckKey then
 		FakeDuck(cmd)
 	end
-	
+
+	-- Compute strafe simulations before aimbot
+	StartCircleStrafe(cmd)
+
 	local aimbotsucc = keybinds.Aimbot.Key and CanShoot(cmd) and Aimbot(cmd)
 	if aimbotsucc then
 		local angles = cmd:GetViewAngles()
 		realangles = angles
 		fakeangles = angles
-		
-		-------- KOSTIL
-		if IsValid(me:GetActiveWeapon()) and me:GetActiveWeapon():GetClass():StartWith("m9k_") and cmd:KeyDown(IN_SPEED) then
-			cmd:RemoveKey(IN_SPEED)
-		end
-	elseif !(cmd:KeyDown(IN_ATTACK) and CanShoot(cmd)) and !cmd:KeyDown(IN_USE) and !shiftingtickbase then
+	elseif !(cmd:KeyDown(IN_ATTACK) and CanShoot(cmd)) and !cmd:KeyDown(IN_USE) and !shiftingTickbase then
 		if settings.HvH.Crimwalk and keybinds.HvH.CrimwalkKey then
 			Crimwalk(cmd)
 		else
@@ -5075,32 +6453,32 @@ samoware.AddHook("OverrideCreateMove", "samoware", function(cmd)
 			if settings.HvH.Freestand then
 				freestandsucc, freestandsafe, freestandunsafe = Freestand(cmd)
 			end
-			
+
 			local pitch, yaw
 			if settings.HvH.AA != "None" and !freestandsucc then
 				yaw, pitch = YawAntiAim(cmd)
 			elseif freestandsucc then
 				yaw = bSendPacket and freestandunsafe or freestandsafe
 			end
-			
+
 			if settings.HvH.FakePitch != "None" then
 				pitch = PitchAntiAim(cmd)
 			end
-			
+
 			if settings.HvH.AA != "None" or settings.HvH.FakePitch != "None" or freestandsucc then
 				local view = settings.Aimbot.Silent and silentangles or cmd:GetViewAngles()
-				
+
 				pitch = pitch or view.p
 				-- yaw = mNormalizeAng(yaw or view.y)
-				
+
 				local angles = Angle(pitch, yaw, 0)
 				cmd:SetViewAngles(angles)
-				
+
 				if bSendPacket then
 					if settings.HvH.FakePitch == "Fake down" then
 						angles.p = 89
 					end
-					
+
 					fakeangles = angles
 				else
 					realangles = angles
@@ -5124,34 +6502,45 @@ samoware.AddHook("OverrideCreateMove", "samoware", function(cmd)
 			cmd:RemoveKey(IN_ATTACK)
 		else
 			local view = settings.Aimbot.Silent and silentangles or cmd:GetViewAngles()
-			
+
 			if settings.Aimbot.Norecoil then
 				view = RemoveRecoil(view)
 			end
-			
+
 			if settings.Aimbot.Nospread then
 				view = RemoveSpread(cmd, view)
 			end
-			
+
 			realangles = view
 			fakeangles = view
-			
-			bSendPacket = true
-			
+
+			if !settings.HvH["FakeLag on shoot"] then
+				bSendPacket = true
+			end
+
 			cmd:SetViewAngles(view)
 		end
 	else
 		local view = cmd:GetViewAngles()
-		
+
 		realangles = view
 		fakeangles = view
 	end
-	
-	if settings.HvH.FakeEblan and !shiftingtickbase then
+
+	-------- KOSTIL
+	if IsValid(me:GetActiveWeapon()) and me:GetActiveWeapon():GetClass():StartWith("m9k_") and cmd:KeyDown(IN_SPEED) and cmd:KeyDown(IN_ATTACK) then
+		print("REMOVING IN_SPEED")
+	end
+
+	if settings.HvH.FakeEblan and !shiftingTickbase then
 		FakeEblan(cmd)
 	end
-	
-	if settings.HvH["Arm breaker"] and bSendPacket and !shiftingtickbase then
+
+	if settings.HvH["Duck in air"] then
+		DuckInAir(cmd)
+	end
+
+	if settings.HvH["Arm breaker"] and bSendPacket and !shiftingTickbase then
 		if settings.HvH.ArmBreakerMode == "Full" then
 			SetTyping(cmd)
 		elseif settings.HvH.ArmBreakerMode == "Random" and mrandom(0, 1) == 0 then
@@ -5160,56 +6549,54 @@ samoware.AddHook("OverrideCreateMove", "samoware", function(cmd)
 			SetTyping(cmd)
 		end
 	end
-	
+
 	if settings.Misc["Flashlight spam"] then
 		cmd:SetImpulse(100)
 	end
-	
+
 	if settings.Misc.Fastwalk and mabs(cmd:GetSideMove()) < 1 and mabs(cmd:GetForwardMove()) > 1 then
 		cmd:SetSideMove(cmd:CommandNumber() % 2 == 0 and -10000 or 10000)
 	end
-	
-	if settings.Misc.CStrafe then
-		CStrafe(cmd)
+
+	if settings.Misc["Michael Jackson"] then
+		MichaelJackson(cmd)
 	end
 
 	if settings.Aimbot.Silent then
 		FixMove(cmd, silentangles)
 	end
-	
+
+	-- Gather thread results
+	FinishCircleStrafe(cmd)
+
 	if settings.HvH.Enginepred then samoware.FinishPrediction() end
-	
-	if !shiftingtickbase then
-		if tickbaseshiftcharge then
-			if settings.HvH.Warp and keybinds.HvH.WarpKey then
-				ShiftTickbase(settings.HvH["Warp shift"])
-			elseif settings.HvH.Doubletap and band(cmd:GetButtons(), IN_ATTACK) != 0 and CanShoot(cmd) then
-				ShiftTickbase()
-			end
+
+	if !shiftingTickbase then
+		if settings.HvH.Warp and keybinds.HvH.WarpKey then
+			ShiftTickbase(settings.HvH["Warp shift"])
+		elseif settings.HvH.Doubletap and band(cmd:GetButtons(), IN_ATTACK) != 0 and CanShoot(cmd) then
+			ShiftTickbase()
 		end
-		
-		if tickbaseshiftcharging and samoware.GetOutSeq() >= samoware.GetAckNr() then
-			tickbaseshiftcharge = true
-			tickbaseshiftcharging = false
-		elseif !tickbaseshiftcharging and keybinds.HvH.WarpRechargeKey then
+
+		if keybinds.HvH.WarpRechargeKey then
 			RechargeShift()
 		end
 	end
-	
+
 	if settings.Aimbot.AutoPistol and band(cmd:GetButtons(), IN_ATTACK) != 0 and CanShoot(cmd) then
 		if autopistol then
 			cmd:RemoveKey(IN_ATTACK)
 		else
 			cmd:SetButtons(bor(cmd:GetButtons(), IN_ATTACK))
 		end
-		
+
 		autopistol = !autopistol
 	end
-	
+
 	if settings.Misc["Spectator memes"] then
 		local r
 		local mode = settings.Misc.SpectatorMemeMode
-		
+
 		if mode == "Spin" then
 			r = (CurTime() * 2.7) % 360
 		elseif mode == "Sin" then
@@ -5219,32 +6606,34 @@ samoware.AddHook("OverrideCreateMove", "samoware", function(cmd)
 		else
 			r = 180
 		end
-		
+
 		local view = cmd:GetViewAngles()
 		view.r = r
-		
+
 		cmd:SetViewAngles(view)
 	end
-	
+
 	if bSendPacket then
 		chokes = 0
 	else
 		chokes = chokes + 1
 	end
-	
+
 	if settings.Misc["SimplAC safe mode"] then
 		local curang = cmd:GetViewAngles()
 		local diff = curang - prevang
 		prevang = curang
-		
+
 		cmd:SetMouseX(diff.y / -0.023)
 		cmd:SetMouseY(diff.p / 0.023)
 	end
-	
+
 	if !settings.Aimbot.Silent then
 		silentangles = cmd:GetViewAngles()
 	end
-	
+
+	if chokes >= 21 then print("CHOKES", chokes) end
+
 	-- set original bSendPacket
 	samoware.SetForceChoke(!bSendPacket)
 end)
