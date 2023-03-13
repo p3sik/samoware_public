@@ -5,6 +5,7 @@
 
 #include "defines.h"
 #include "varmap.h"
+#include "icliententitylist.h"
 
 #include "../util.h"
 
@@ -14,12 +15,27 @@ class matrix3x4_t;
 class Vector;
 class Angle;
 
+class IHandleEntity {
+public:
+	virtual ~IHandleEntity() {}
+	virtual void SetRefEHandle(const CBaseHandle& handle) = 0;
+	virtual const CBaseHandle& GetRefEHandle() const = 0;
+};
+
+class IClientUnknown : public IHandleEntity {
+public:
+
+};
+
 class CBaseEntity {
 public:
+	IClientUnknown* GetClientUnknown() { return reinterpret_cast<IClientUnknown*>(this); }
+
 	VPROXY(ShouldInterpolate, 146, bool, (void));
 
 	//NETVAR_(Vector, DT_BaseEntity, m_vecAbsVelocity[0], GetAbsVelocity);
 	NETVAR_(Vector, DT_BaseEntity, m_vecVelocity[0], GetVelocity);
+	NETVAR_(Vector, DT_BaseEntity, m_vecOrigin, GetAbsOrigin);
 	OFFSETVAR(char, m_MoveType, 0x1F4);
 
 	OFFSETVAR(VarMapping_t, GetVarMapping, 40);
@@ -42,9 +58,9 @@ class CBaseAnimating : public CBaseEntity {
 public:
 	VPROXY(SetupBones, 16, bool, (matrix3x4_t* pBoneToWorldOut, int nMaxBones, int boneMask), pBoneToWorldOut, nMaxBones, boneMask);
 
-
 	OFFSETVAR(CBasePlayerAnimState*, GetAnimState, 0x3610);
 	NETVAR(bool, DT_BaseAnimating, m_bClientSideAnimation);
+	NETVAR(float, DT_BaseAnimating, m_flModelScale);
 };
 
 class CBasePlayer : public CBaseAnimating {
@@ -67,10 +83,21 @@ public:
 	NETVAR_(float, DT_GMOD_Player, m_angEyeAngles[0], EyePitch);
 	NETVAR_(float, DT_GMOD_Player, m_angEyeAngles[1], EyeYaw);
 
+	NETVAR_(Vector, DT_BasePlayer, m_vecBaseVelocity, GetBaseVelocity);
+	NETVAR_(Vector, DT_BasePlayer, m_vecViewOffset[0], GetViewOffset);
+
 	NETVAR(int, DT_BasePlayer, m_nTickBase);
 	NETVAR(float, DT_BasePlayer, m_flSimulationTime);
 	NETVAR(int, DT_BasePlayer, m_fFlags);
 	NETVAR(int, DT_BasePlayer, m_hActiveWeapon);
+
+	NETVAR(bool, DT_BasePlayer, m_bDucked);
+	NETVAR(float, DT_BasePlayer, m_flDucktime);
+	NETVAR(float, DT_BasePlayer, m_flDuckJumpTime);
+	NETVAR(bool, DT_BasePlayer, m_bDucking);
+	NETVAR(bool, DT_BasePlayer, m_bInDuckJump);
+
+	NETVAR(CBaseEntity*, DT_BasePlayer, m_hGroundEntity);
 
 	// IDA strings
 	OFFSETVAR(float, GetFallVelocity, 92);

@@ -135,43 +135,46 @@ public:
 	}
 
 	Vector Forward() const {
-		float sp, sy, cp, cy;
+		float radp = math::deg2rad(p);
+		float rady = math::deg2rad(y);
 
-		sy = std::sinf(y), cy = std::cosf(y);
-		sp = std::sinf(p), cp = std::cosf(p);
+		float sp = std::sinf(radp), cp = std::cosf(radp);
+		float sy = std::sinf(rady), cy = std::cosf(rady);
 
 		return Vector(cp * cy, cp * sy, -sp);
 	}
 
 	Vector Right() const {
-		float sr, sp, sy, cr, cp, cy;
-
 		float radp = math::deg2rad(p);
 		float rady = math::deg2rad(y);
 		float radr = math::deg2rad(r);
 
-		sp = sin(radp); cp = cos(radp);
-		sy = sin(rady); cy = cos(rady);
-		sr = sin(radr); cr = cos(radr);
+		float sp = std::sinf(radp), cp = std::cosf(radp);
+		float sy = std::sinf(rady), cy = std::cosf(rady);
+		float sr = std::sinf(radr), cr = std::cosf(radr);
 
-		return Vector(-1 * sr * sp * cy + -1 * cr * -sy,
-					  -1 * sr * sp * sy + -1 * cr * cy,
-					  -1 * sr * cp);
+		return Vector(-1.f * sr * sp * cy + -1.f * cr * -sy,
+					  -1.f * sr * sp * sy + -1.f * cr * cy,
+					  -1.f * sr * cp);
 	}
 
 	Vector Up() const {
-		float sr, sp, sy, cr, cp, cy;
-
 		float radp = math::deg2rad(p);
 		float rady = math::deg2rad(y);
 		float radr = math::deg2rad(r);
 
-		sp = sin(radp); cp = cos(radp);
-		sy = sin(rady); cy = cos(rady);
-		sr = sin(radr); cr = cos(radr);
+		float sp = std::sinf(radp), cp = std::cosf(radp);
+		float sy = std::sinf(rady), cy = std::cosf(rady);
+		float sr = std::sinf(radr), cr = std::cosf(radr);
 
 		return Vector(cr * sp * cy + -sr * -sy,
 					  cr * sp * sy + -sr * cy,
 					  cr * cp);
+	}
+
+	void Vectors(Vector& outForward, Vector& outRight, Vector& outUp) const {
+		outForward = Forward();
+		outRight = Right();
+		outUp = Up();
 	}
 };

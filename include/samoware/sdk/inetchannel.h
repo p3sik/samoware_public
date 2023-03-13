@@ -41,7 +41,7 @@ enum class NetMessage {
 	svc_GameEventList = 30,
 	svc_GetCvarValue = 31,
 	svc_CmdKeyValues = 32,
-	svc_SetPauseTimed = 33,
+	svc_GMod_ServerToClient = 33,
 
 	clc_ClientInfo = 8,
 	clc_Move = 9,
@@ -52,7 +52,8 @@ enum class NetMessage {
 	clc_FileCRCCheck = 14,
 	clc_SaveReplay = 15,
 	clc_CmdKeyValues = 16,
-	clc_FileMD5Check = 17
+	clc_FileMD5Check = 17,
+	clc_GMod_ClientToServer = 18
 };
 
 class INetChannelInfo {
@@ -115,6 +116,7 @@ public:
 		return cfw::vmt::call<bool, INetMessage&>((void*)this, vIndex_SendNetMsg, msg, bForceReliable, bVoice);
 	}
 
+	VPROXY(SetChoked, 45, void, (void));
 	VPROXY(SendDatagram, 46, int, (bf_write* data), data);
 
 public:
@@ -135,6 +137,10 @@ public:
 	// number of choked packets
 	int			m_nChokedPackets;
 	int			m_PacketDrop;
+
+	uint8_t pad_0001[42];
+
+	bf_write m_StreamUnreliable;
 };
 
 class INetMessage {
@@ -205,3 +211,44 @@ public:
 
 	virtual bool ReadFromBuffer(bf_read& buffer) { return false; }
 };
+
+
+
+class IBaseNetMessage {
+public:
+	virtual ~IBaseNetMessage() {};
+};
+
+class CNetMessageImpl : public IBaseNetMessage {
+public:
+	CNetMessageImpl() {
+		m_bReliable = true;
+		m_NetChannel = NULL;
+	}
+
+	virtual ~CNetMessageImpl() {};
+
+	bool m_bReliable;	// true if message should be send reliable
+	INetChannel* m_NetChannel;	// netchannel this message is from/for
+	INetMessageHandler* m_pMessageHandler;
+};
+
+class CLC_Move : public CNetMessageImpl {
+public:
+	CLC_Move() {
+		m_bReliable = false;
+	}
+
+	void SetupVMT() {
+		static void** vmt = reinterpret_cast<void**>(cfw::getAbsAddr(cfw::findPattern("engine.dll", "FF C0 03 F8 48 89 B4 24 E8 10 00 00 48 8D 05") + 12));
+		*reinterpret_cast<void***>(this) = vmt;
+	}
+
+	int			m_nBackupCommands;
+	int			m_nNewCommands;
+	int			m_nLength;
+	byte		pad_0001[24];
+	bf_read		m_DataIn;
+	bf_write	m_DataOut;
+};
+

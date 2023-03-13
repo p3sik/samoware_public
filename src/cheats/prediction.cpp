@@ -43,11 +43,11 @@ void EnginePrediction::Start(CUserCmd* cmd) {
 	localPlayer->GetCurrentCommand() = cmd;
 	*_predictionRandomSeed = cmd->random_seed;
 
-	unpredictedFlags = localPlayer->m_fFlags();
+	//unpredictedFlags = localPlayer->m_fFlags();
 
 	_unpredictedCurtime = interfaces::globalVars->curtime;
 	_unpredictedFrametime = interfaces::globalVars->frametime;
-	_unpredictedVelocity = localPlayer->GetVelocity();
+	//_unpredictedVelocity = localPlayer->GetVelocity();
 
 	interfaces::globalVars->curtime = GetServerTime(cmd);
 	interfaces::globalVars->frametime = interfaces::globalVars->interval_per_tick;
@@ -84,35 +84,10 @@ void EnginePrediction::Finish() {
 	interfaces::globalVars->curtime = _unpredictedCurtime;
 	interfaces::globalVars->frametime = _unpredictedFrametime;
 
-	localPlayer->GetVelocity() = _unpredictedVelocity;
+	//localPlayer->GetVelocity() = _unpredictedVelocity;
 
-	localPlayer->m_fFlags() = unpredictedFlags;
+	//localPlayer->m_fFlags() = unpredictedFlags;
 
 	*_predictionRandomSeed = -1;
 	localPlayer->GetCurrentCommand() = nullptr;
-}
-
-void EnginePrediction::StartSimulation(CBasePlayer* ply, CUserCmd* cmd) {
-	_unsimulatedFlags = ply->m_fFlags();
-	_unsimulatedCurtime = interfaces::globalVars->curtime;
-	_unsimulatedFrametime = interfaces::globalVars->frametime;
-
-	interfaces::globalVars->frametime = interfaces::globalVars->interval_per_tick;
-
-	memset(&moveData, 0, sizeof(moveData));
-	interfaces::prediction->SetupMove(ply, cmd, interfaces::moveHelper, &moveData);
-}
-
-void EnginePrediction::SimulateTick(CBasePlayer* ply, CUserCmd* cmd, int numTick) {
-	interfaces::globalVars->curtime = ply->m_flSimulationTime() + numTick * interfaces::globalVars->interval_per_tick;
-	interfaces::gameMovement->ProcessMovement(ply, &moveData);
-}
-
-void EnginePrediction::FinishSimulation(CBasePlayer* ply) {
-	interfaces::prediction->FinishMove(ply, nullptr, &moveData);
-
-	ply->m_fFlags() = _unsimulatedFlags;
-
-	interfaces::globalVars->curtime = _unsimulatedCurtime;
-	interfaces::globalVars->frametime = _unsimulatedFrametime;
 }

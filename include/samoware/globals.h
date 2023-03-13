@@ -12,6 +12,14 @@ public:
 	bool shouldChoke = false;
 	bool forceChoke = false;
 
+	bool manipulateInterp = false;
+	float targetInterp = 0.f;
+	
+	bool shiftingTickbase = false;
+	int tickbaseShift = 0;
+	int ticksAllowed = 0;
+	int tickbaseShiftRecharge = 0;
+
 	bool inGameOverlay = false;
 
 	bool isNewTick = false;

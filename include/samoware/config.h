@@ -5,7 +5,7 @@
 #include "cfw/imenum.h"
 
 enum class LaggerType {
-	lol
+	ok
 };
 
 class Config : public cfw::Singleton<Config> {
@@ -28,10 +28,12 @@ public:
 		bool useSpam = false;
 		bool flashlightSpam = false;
 		bool armBreaker = false;
-		bool antiOBS = false;
+		bool antiOBS = true;
 		char nameChangerName[128] = "default";
 		bool lagger = false;
-		cfw::EnumHelper<LaggerType> laggerType = LaggerType::lol;
+		cfw::EnumHelper<LaggerType> laggerType = LaggerType::ok;
 		int laggerForce = 0;
+		bool laggerHold = false;
+		int laggerHoldTicks = 0;
 	} misc;
 };

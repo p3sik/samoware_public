@@ -17,6 +17,10 @@ namespace hooks {
 		if (vguiPanel != overlayPopupPanel)
 			return;
 
+		typedef void(*MsgFn)(const char*, ...);
+		static MsgFn msg = reinterpret_cast<MsgFn>(GetProcAddress(GetModuleHandle("tier0.dll"), "Msg"));
+		// msg("SW OverlayPopupPanel\n");
+
 		luaapi::CallHook("OverlayPopupPanel",01, [&](ILuaBase* LUA) { });
 
 		LuaLoader::Get().ProcessQueue();

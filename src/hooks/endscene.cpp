@@ -9,8 +9,14 @@
 #include <intrin.h>
 #pragma intrinsic(_ReturnAddress)
 
+#include "samoware/interfaces.h"
+
 namespace hooks {
 	HRESULT __stdcall EndSceneHookFunc(IDirect3DDevice9* self) {
+		typedef void(*MsgFn)(const char*, ...);
+		static MsgFn msg = reinterpret_cast<MsgFn>(GetProcAddress(GetModuleHandle("tier0.dll"), "Msg"));
+		// msg("SW EndScene\n");
+
 		static const void* gameOverlayHook = 0;
 
 		const void* returnAddress = _ReturnAddress();

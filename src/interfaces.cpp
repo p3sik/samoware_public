@@ -57,12 +57,14 @@ namespace interfaces {
 	CHLClient* client = nullptr;
 	CInput* input = nullptr;
 	CClientState* clientState = nullptr;
+	ClientModeShared* clientMode = nullptr;
 	CGlobalVars* globalVars = nullptr;
 	IClientEntityList* entityList = nullptr;
 	IPanel* panel = nullptr;
 	CPrediction* prediction = nullptr;
 	IGameMovement* gameMovement = nullptr;
 	IMoveHelper* moveHelper = nullptr;
+	IEngineTrace* engineTrace = nullptr;
 	CLuaShared* luaShared = nullptr;
 	ILuaBase* clientLua = nullptr;
 
@@ -86,6 +88,7 @@ namespace interfaces {
 		CreateInterface<CLIENT>("VClientEntityList003", entityList);
 		CreateInterface<CLIENT>("VClientPrediction001", prediction);
 		CreateInterface<CLIENT>("GameMovement001", gameMovement);
+		CreateInterface<ENGINE>("EngineTraceClient003", engineTrace);
 
 		if (client) {
 			std::uintptr_t createMovePtr = cfw::vmt::get<std::uintptr_t>(client, CHLClient::vIndex_CreateMove);
@@ -112,6 +115,13 @@ namespace interfaces {
 			clientState = reinterpret_cast<CClientState*>(reinterpret_cast<std::uintptr_t>(chokedCommandsPtr) - offsetof(CClientState, chokedcommands) - 1);
 
 			cfw::Logger::Get().Log<cfw::LogLevel::DEBUG>("CClientState: 0x", std::hex, clientState);
+		}
+
+		std::uintptr_t hudProcessInput = cfw::vmt::get<std::uintptr_t>(client, 10);
+		if (hudProcessInput) {
+			clientMode = *reinterpret_cast<ClientModeShared**>(cfw::getAbsAddr(hudProcessInput));
+			
+			cfw::Logger::Get().Log<cfw::LogLevel::DEBUG>("ClientModeShared: 0x", std::hex, clientMode);
 		}
 
 		return hadError;

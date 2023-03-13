@@ -12,7 +12,8 @@ public:
 
 class CMoveData {
 public:
-	char pad_0000[4]; //0x0000
+	bool m_bFirstRunOfFunctions : 1; //0x0000
+	bool m_bGameCodeMovedPlayer : 1; //0x0000
 	uint32_t m_nPlayerHandle; //0x0004
 	int32_t m_nImpulseCommand; //0x0008
 	Angle m_vecViewAngles; //0x000C
@@ -52,4 +53,17 @@ public:
 	virtual Vector	GetPlayerMins(bool ducked) const = 0;
 	virtual Vector	GetPlayerMaxs(bool ducked) const = 0;
 	virtual Vector  GetPlayerViewOffset(bool ducked) const = 0;
+
+	virtual void	UNKNOWN1() = 0;
+	virtual void	UNKNOWN2() = 0;
+	virtual void	UNKNOWN3() = 0;
+	virtual void	UNKNOWN4() = 0;
+	virtual void	UNKNOWN5() = 0;
+
+	// Does most of the player movement logic.
+	// Returns with origin, angles, and velocity modified in place.
+	// were contacted during the move.
+	virtual void	PlayerMove(void) = 0;
+
+
 };

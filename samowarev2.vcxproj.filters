@@ -16,24 +16,6 @@
     <Filter Include="3rdparty">
       <UniqueIdentifier>{2c885479-5c04-47f3-b7b4-80b4f7e3254d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3rdparty\minhook">
-      <UniqueIdentifier>{24ce063b-6604-44d1-8a94-961a7dc68975}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdparty\minhook\src">
-      <UniqueIdentifier>{558be5c0-c136-4c97-b407-4efcf5025952}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdparty\minhook\src\hde">
-      <UniqueIdentifier>{76fbf979-a416-45d5-a713-2050166203c5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdparty\imgui">
-      <UniqueIdentifier>{59a16b28-e695-496c-94bb-ef7e95f745a9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdparty\cfw">
-      <UniqueIdentifier>{72b05153-8e79-4f4c-a6a2-a741b190c88f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdparty\cfw\hooks">
-      <UniqueIdentifier>{dcb89877-47fc-49f4-aa2e-0a1ec289b0b0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\sdk">
       <UniqueIdentifier>{2c474dce-f80a-4e7d-bb40-6924d02e5542}</UniqueIdentifier>
     </Filter>
@@ -52,6 +34,18 @@
     <Filter Include="Source Files\cheats">
       <UniqueIdentifier>{a4290244-96a3-402f-bf63-d39a5771f016}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3rdparty\cfw">
+      <UniqueIdentifier>{227b7893-ed35-4f79-8939-ea481badcf90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\minhook">
+      <UniqueIdentifier>{7f976381-6988-41e9-915b-8803ec120c50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\minhook\hde">
+      <UniqueIdentifier>{55d4a4bc-209d-4d1c-ac65-1b851d197c68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\imgui">
+      <UniqueIdentifier>{cc136668-cf76-4e7c-a396-a06c809b760a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -59,48 +53,6 @@
     </ClCompile>
     <ClCompile Include="src\menu.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\samoware_internal\minhook\src\buffer.c">
-      <Filter>3rdparty\minhook\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\samoware_internal\minhook\src\hook.c">
-      <Filter>3rdparty\minhook\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\samoware_internal\minhook\src\trampoline.c">
-      <Filter>3rdparty\minhook\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\samoware_internal\minhook\src\hde\hde32.c">
-      <Filter>3rdparty\minhook\src\hde</Filter>
-    </ClCompile>
-    <ClCompile Include="..\samoware_internal\minhook\src\hde\hde64.c">
-      <Filter>3rdparty\minhook\src\hde</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_tables.cpp">
-      <Filter>3rdparty\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_widgets.cpp">
-      <Filter>3rdparty\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui.cpp">
-      <Filter>3rdparty\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_draw.cpp">
-      <Filter>3rdparty\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\backends\imgui_impl_dx9.cpp">
-      <Filter>3rdparty\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\backends\imgui_impl_win32.cpp">
-      <Filter>3rdparty\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cheatframework\src\hookmgr.cpp">
-      <Filter>3rdparty\cfw</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cheatframework\src\logger.cpp">
-      <Filter>3rdparty\cfw</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cheatframework\src\basefunchook.cpp">
-      <Filter>3rdparty\cfw</Filter>
     </ClCompile>
     <ClCompile Include="src\interfaces.cpp">
       <Filter>Source Files</Filter>
@@ -176,6 +128,72 @@
     </ClCompile>
     <ClCompile Include="src\hooks\packetstart.cpp">
       <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\clientmode_createmove.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\impacteffect.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cheats\simulation.cpp">
+      <Filter>Source Files\cheats</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sdk\tier0.cpp">
+      <Filter>Source Files\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cheats\threaded_simulation.cpp">
+      <Filter>Source Files\cheats</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\clmove.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\src\hookmgr.cpp">
+      <Filter>3rdparty\cfw</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\src\logger.cpp">
+      <Filter>3rdparty\cfw</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\src\main.cpp">
+      <Filter>3rdparty\cfw</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\src\basefunchook.cpp">
+      <Filter>3rdparty\cfw</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\minhook\src\buffer.c">
+      <Filter>3rdparty\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\minhook\src\hook.c">
+      <Filter>3rdparty\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\minhook\src\trampoline.c">
+      <Filter>3rdparty\minhook</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\minhook\src\hde\hde64.c">
+      <Filter>3rdparty\minhook\hde</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\minhook\src\hde\hde32.c">
+      <Filter>3rdparty\minhook\hde</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\imgui\backends\imgui_impl_dx9.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\imgui\imgui_widgets.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\imgui\imgui.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\imgui\imgui_demo.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\imgui\imgui_draw.cpp">
+      <Filter>3rdparty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="cheatframework\3rdparty\imgui\imgui_tables.cpp">
+      <Filter>3rdparty\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -339,6 +357,33 @@
       <Filter>Header Files\sdk</Filter>
     </ClInclude>
     <ClInclude Include="include\samoware\hooks\packetstart.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="clientmodeshared.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="clientmode_createmove.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\effects.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\impacteffect.h">
+      <Filter>Header Files\hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\cheats\simulation.h">
+      <Filter>Header Files\cheats</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\cheats\threaded_simulation.h">
+      <Filter>Header Files\cheats</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\tier0.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\sdk\ienginetrace.h">
+      <Filter>Header Files\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\samoware\hooks\clmove.h">
       <Filter>Header Files\hooks</Filter>
     </ClInclude>
   </ItemGroup>

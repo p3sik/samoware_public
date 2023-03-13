@@ -31,17 +31,17 @@ namespace hooks {
 		if (stage == ClientFrameStage_t::FRAME_RENDER_START) {
 			static int prevTick = 0;
 			int currentTick = interfaces::globalVars->tickcount;
-
+		
 			Globals::Get().isNewTick = currentTick != prevTick;
-
 			if (currentTick != prevTick) {
 				Misc::Get().Lagger();
-				prevTick = currentTick;
 			}
 		}
 
-		if (stage == ClientFrameStage_t::FRAME_RENDER_START)
-			interfaces::prediction->SetLocalViewAngles(Globals::Get().currentViewAngles);
+		if (stage == ClientFrameStage_t::FRAME_RENDER_START) {
+			auto currentViewAngles = Globals::Get().currentViewAngles;
+			interfaces::prediction->SetLocalViewAngles(currentViewAngles);
+		}
 
 		luaapi::CallHook("PreFrameStageNotify", 1, [&](ILuaBase* LUA) {
 			LUA->PushNumber(static_cast<int>(stage));

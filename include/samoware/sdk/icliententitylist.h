@@ -1,8 +1,10 @@
 
 #pragma once
 
+#include <cstdint>
+
 class CBaseEntity;
-class CBaseHandle;
+using CBaseHandle = uint32_t;
 
 class IClientEntityList {
 public:

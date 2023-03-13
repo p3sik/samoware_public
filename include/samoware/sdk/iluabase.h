@@ -167,8 +167,8 @@ public:
 	virtual const char*		CheckString(int iStackPos = -1) = 0;
 	virtual double			CheckNumber(int iStackPos = -1) = 0;
 	virtual int				ObjLen(int) = 0;
-	virtual Angle			GetAngle(int) = 0;
-	virtual Vector			GetVector(int) = 0;
+	virtual const Angle&	GetAngle(int) = 0;
+	virtual const Vector&   GetVector(int) = 0;
 	virtual int				PushAngle(Angle const&) = 0;
 	virtual int				PushVector(Vector const&) = 0;
 	virtual int				SetState(lua_State*) = 0;

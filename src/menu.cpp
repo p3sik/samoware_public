@@ -91,8 +91,8 @@ void SamowareMenu::SetupStyle() {
 	ImFontConfig cfg;
 
 	auto& fonts = ImGui::GetIO().Fonts;
-	_anonymousPro = fonts->AddFontFromFileTTF("Anonymous_Pro.ttf", 15.f, &cfg);
-	_anonymousProBold = fonts->AddFontFromFileTTF("Anonymous_Pro_B.ttf", 18.f, &cfg);
+	_anonymousPro = fonts->AddFontFromFileTTF("D:/VSProjects/samowarev2/Anonymous_Pro.ttf", 15.f, &cfg);
+	_anonymousProBold = fonts->AddFontFromFileTTF("D:/VSProjects/samowarev2/Anonymous_Pro_B.ttf", 18.f, &cfg);
 }
 
 void SamowareMenu::DrawTabs() {
@@ -170,10 +170,12 @@ void SamowareMenu::DrawMiscTab() {
 		}
 
 		ImGui::Checkbox("Lagger", &cfg.misc.lagger);
+		ImGui::Checkbox("Lagger hold", &cfg.misc.laggerHold);
 		ImGuiCustom::Combo("Lagger type", cfg.misc.laggerType.Ptr(), {
-			"lol"
+			"a"
 						   });
 		ImGuiCustom::SliderInt("Lagger force", &cfg.misc.laggerForce, 0, 1024, nullptr, ImGuiSliderFlags_Logarithmic);
+		ImGuiCustom::SliderInt("Lagger hold ticks", &cfg.misc.laggerHoldTicks, 0, 66 * 10);
 
 		static int clickCount = 0;
 		if (ImGui::Button("Unload")) {

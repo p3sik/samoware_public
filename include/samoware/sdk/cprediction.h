@@ -1,7 +1,10 @@
 
 #pragma once
 
+#include "cfw/util.h"
+
 #include "igamemovement.h"
+#include "../util.h"
 
 class CBaseEntity;
 class CUserCmd;
@@ -33,4 +36,7 @@ public:
 
 	// For hooking
 	VPROXY(RunCommand, 17, void, (CBaseEntity* player, CUserCmd* ucmd, IMoveHelper* moveHelper), player, ucmd, moveHelper);
+
+	OFFSETVAR(bool, GetInPrediction, 0x0C);
+	OFFSETVAR(bool, GetIsFirstTimePredicted, 0x0D);
 };

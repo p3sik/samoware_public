@@ -99,29 +99,32 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include;$(IncludePath)</IncludePath>
-    <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include</IncludePath>
+    <SourcePath>$(ProjectDir)src</SourcePath>
+    <LibraryPath>D:\_Avzlom\test\cheatframework\3rdparty\freetype\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include;$(IncludePath)</IncludePath>
-    <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
-    <LibraryPath>$(ProjectDir)cheatframework\3rdparty\freetype\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include</IncludePath>
+    <SourcePath>$(ProjectDir)src</SourcePath>
+    <LibraryPath>D:\_Avzlom\test\cheatframework\3rdparty\freetype\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include;$(IncludePath)</IncludePath>
-    <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)cheatframework\include;$(ProjectDir)cheatframework\3rdparty;$(ProjectDir)cheatframework\3rdparty\minhook\include;$(ProjectDir)cheatframework\3rdparty\freetype\include</IncludePath>
+    <SourcePath>$(ProjectDir)src</SourcePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -130,6 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,6 +146,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -156,6 +161,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -192,6 +198,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;SAMOWARE_CLANG;%(PreprocessorDefinitions);CFW_RENDERER_DX9</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -214,39 +221,49 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\backends\imgui_impl_dx9.cpp" />
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\backends\imgui_impl_win32.cpp" />
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui.cpp" />
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_tables.cpp" />
-    <ClCompile Include="..\cheatframework\3rdparty\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="..\cheatframework\src\basefunchook.cpp" />
-    <ClCompile Include="..\cheatframework\src\hookmgr.cpp" />
-    <ClCompile Include="..\cheatframework\src\logger.cpp" />
-    <ClCompile Include="..\samoware_internal\minhook\src\buffer.c" />
-    <ClCompile Include="..\samoware_internal\minhook\src\hde\hde32.c" />
-    <ClCompile Include="..\samoware_internal\minhook\src\hde\hde64.c" />
-    <ClCompile Include="..\samoware_internal\minhook\src\hook.c" />
-    <ClCompile Include="..\samoware_internal\minhook\src\trampoline.c" />
+    <ClCompile Include="cheatframework\3rdparty\imgui\backends\imgui_impl_dx9.cpp" />
+    <ClCompile Include="cheatframework\3rdparty\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="cheatframework\3rdparty\imgui\imgui.cpp" />
+    <ClCompile Include="cheatframework\3rdparty\imgui\imgui_demo.cpp" />
+    <ClCompile Include="cheatframework\3rdparty\imgui\imgui_draw.cpp" />
+    <ClCompile Include="cheatframework\3rdparty\imgui\imgui_tables.cpp" />
+    <ClCompile Include="cheatframework\3rdparty\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="cheatframework\3rdparty\minhook\src\buffer.c" />
+    <ClCompile Include="cheatframework\3rdparty\minhook\src\hde\hde32.c" />
+    <ClCompile Include="cheatframework\3rdparty\minhook\src\hde\hde64.c" />
+    <ClCompile Include="cheatframework\3rdparty\minhook\src\hook.c" />
+    <ClCompile Include="cheatframework\3rdparty\minhook\src\trampoline.c" />
+    <ClCompile Include="cheatframework\src\basefunchook.cpp" />
+    <ClCompile Include="cheatframework\src\hookmgr.cpp" />
+    <ClCompile Include="cheatframework\src\logger.cpp" />
+    <ClCompile Include="cheatframework\src\main.cpp" />
     <ClCompile Include="src\cheat.cpp" />
     <ClCompile Include="src\cheats\luaapi.cpp" />
     <ClCompile Include="src\cheats\lualoader.cpp" />
     <ClCompile Include="src\cheats\misc.cpp" />
     <ClCompile Include="src\cheats\prediction.cpp" />
+    <ClCompile Include="src\cheats\simulation.cpp" />
+    <ClCompile Include="src\cheats\threaded_simulation.cpp" />
     <ClCompile Include="src\hooks\checkforsequencechange.cpp" />
+    <ClCompile Include="src\hooks\clientmode_createmove.cpp" />
+    <ClCompile Include="src\hooks\clmove.cpp" />
     <ClCompile Include="src\hooks\createmove.cpp" />
     <ClCompile Include="src\hooks\endscene.cpp" />
     <ClCompile Include="src\hooks\framestagenotify.cpp" />
+    <ClCompile Include="src\hooks\impacteffect.cpp" />
     <ClCompile Include="src\hooks\isplayingtimedemo.cpp" />
     <ClCompile Include="src\hooks\luastringdump.cpp" />
     <ClCompile Include="src\hooks\packetstart.cpp" />
@@ -263,23 +280,30 @@
     <ClCompile Include="src\netvars.cpp" />
     <ClCompile Include="src\sdk\bitbuf.cpp" />
     <ClCompile Include="src\sdk\luajit.cpp" />
+    <ClCompile Include="src\sdk\tier0.cpp" />
     <ClCompile Include="src\sdk\vstdlib.cpp" />
     <ClCompile Include="src\texteditor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="clientmodeshared.h" />
+    <ClInclude Include="clientmode_createmove.h" />
     <ClInclude Include="include\samoware\cheat.h" />
     <ClInclude Include="include\samoware\cheats\luaapi.h" />
     <ClInclude Include="include\samoware\cheats\lualoader.h" />
     <ClInclude Include="include\samoware\cheats\misc.h" />
     <ClInclude Include="include\samoware\cheats\prediction.h" />
+    <ClInclude Include="include\samoware\cheats\simulation.h" />
+    <ClInclude Include="include\samoware\cheats\threaded_simulation.h" />
     <ClInclude Include="include\samoware\config.h" />
     <ClInclude Include="include\samoware\crc32.h" />
     <ClInclude Include="include\samoware\external.h" />
     <ClInclude Include="include\samoware\globals.h" />
     <ClInclude Include="include\samoware\hooks\checkforsequencechange.h" />
+    <ClInclude Include="include\samoware\hooks\clmove.h" />
     <ClInclude Include="include\samoware\hooks\createmove.h" />
     <ClInclude Include="include\samoware\hooks\endscene.h" />
     <ClInclude Include="include\samoware\hooks\framestagenotify.h" />
+    <ClInclude Include="include\samoware\hooks\impacteffect.h" />
     <ClInclude Include="include\samoware\hooks\isplayingtimedemo.h" />
     <ClInclude Include="include\samoware\hooks\luastringdump.h" />
     <ClInclude Include="include\samoware\hooks\packetstart.h" />
@@ -308,8 +332,10 @@
     <ClInclude Include="include\samoware\sdk\cusercmd.h" />
     <ClInclude Include="include\samoware\sdk\cutlvector.h" />
     <ClInclude Include="include\samoware\sdk\defines.h" />
+    <ClInclude Include="include\samoware\sdk\effects.h" />
     <ClInclude Include="include\samoware\sdk\icliententitylist.h" />
     <ClInclude Include="include\samoware\sdk\iengineclient.h" />
+    <ClInclude Include="include\samoware\sdk\ienginetrace.h" />
     <ClInclude Include="include\samoware\sdk\igamemovement.h" />
     <ClInclude Include="include\samoware\sdk\iluabase.h" />
     <ClInclude Include="include\samoware\sdk\inetchannel.h" />
@@ -317,6 +343,7 @@
     <ClInclude Include="include\samoware\sdk\luajit.h" />
     <ClInclude Include="include\samoware\sdk\math.h" />
     <ClInclude Include="include\samoware\sdk\recv.h" />
+    <ClInclude Include="include\samoware\sdk\tier0.h" />
     <ClInclude Include="include\samoware\sdk\varmap.h" />
     <ClInclude Include="include\samoware\sdk\vector.h" />
     <ClInclude Include="include\samoware\sdk\vstdlib.h" />

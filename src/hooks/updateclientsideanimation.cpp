@@ -39,7 +39,7 @@ namespace hooks {
 		
 		float oldCurtime = interfaces::globalVars->curtime;
 		float oldFrametime = interfaces::globalVars->frametime;
-		interfaces::globalVars->curtime = simulationTime;
+		interfaces::globalVars->curtime = simulationTime + 0.5f;
 		interfaces::globalVars->frametime = interfaces::globalVars->interval_per_tick;
 
 		self->m_iEFlags() |= static_cast<int>(EFlags::DIRTY_ABSVELOCITY);

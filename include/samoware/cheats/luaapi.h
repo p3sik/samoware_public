@@ -13,6 +13,7 @@ namespace luaapi {
 		extern std::unordered_map<std::string, std::unordered_map<std::string, int>> hooks;
 	}
 
+	// There must be a function at the top of the stack
 	void AddHook(const std::string& name, const std::string& id);
 	void RemoveHook(const std::string& name, const std::string& id);
 	void RemoveAllHooks();

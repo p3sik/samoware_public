@@ -26,12 +26,19 @@
 namespace hooks {
 	void __fastcall CreateMoveHookFunc(CHLClient* self, int sequence_number, float input_sample_frametime, bool active) {
 		static bool runtimeHooksInit = false;
+		static void* jePtr;
 		if (!runtimeHooksInit) {
 			runtimeHooksInit = true;
 
 			ShouldInterpolateHook::Get().Setup();
 			UpdateClientsideAnimationHook::Get().Setup();
 			SendNetMsgHook::Get().Setup();
+
+			std::uintptr_t clMovePtr = cfw::findPattern("engine.dll", "40 55 53 48 8D AC 24 38 F0 FF FF B8 C8 10 00 00 E8 ?? ?? ?? ?? 48 2B E0 0F 29 B4 24 B0 10 00 00");
+			jePtr = reinterpret_cast<void*>(clMovePtr + 0x16a);
+
+			DWORD dummy;
+			VirtualProtect(jePtr, 8, PAGE_EXECUTE_READWRITE, &dummy);
 		}
 
 		CreateMoveHook::Get().GetOriginal()(self, sequence_number, input_sample_frametime, active);
@@ -46,33 +53,15 @@ namespace hooks {
 		if (!cmd || !cmd->command_number)
 			return;
 
-		// Update server time
-		EnginePrediction::Get().GetServerTime(cmd);
-
-		Globals& globals = Globals::Get();
-		globals.forceChoke = false;
-		globals.shouldChoke = false;
-
-		Misc& misc = Misc::Get();
-
-		misc.ChangeName();
-
-		misc.UseSpam(cmd);
-		misc.FlashlightSpam(cmd);
-		misc.ArmBreaker(cmd);
-		misc.FastWalk(cmd);
-		misc.AutoStrafe(cmd);
-		misc.BunnyHop(cmd);
-
-		cmd->viewangles.Normalize();
-		
 		cmd->forwardmove = std::clamp(cmd->forwardmove, -10000.f, 10000.f);
 		cmd->sidemove = std::clamp(cmd->sidemove, -10000.f, 10000.f);
 		cmd->upmove = std::clamp(cmd->upmove, -10000.f, 10000.f);
 
+		/*
 		luaapi::CallHook("OverrideCreateMove", 1, [&](ILuaBase* LUA) -> void {
 			LUA->PushUserType(cmd, Lua::USERCMD);
 						 });
+		*/
 
 		{
 			Angle& prevViewAngles = CreateMoveHook::Get().prevViewAngles;
@@ -91,7 +80,17 @@ namespace hooks {
 
 		Globals::Get().currentViewAngles = cmd->viewangles;
 
-		external::setR14b(!globals.forceChoke && !globals.shouldChoke);
+		Globals& globals = Globals::Get();
+		// external::setR14b(!globals.forceChoke && !globals.shouldChoke);
+		if (!globals.forceChoke && !globals.shouldChoke) {
+			// bSendPacket = true
+			static uint8_t jeBytes[] = {0x0f, 0x84, 0xBD, 0x02, 0x00, 0x00};
+			memcpy(jePtr, jeBytes, 6);
+		} else {
+			// bSendPacket = false
+			static uint8_t jmpBytes[] = {0xe9, 0xbe, 0x02, 0x00, 0x00, 0x90};
+			memcpy(jePtr, jmpBytes, 6);
+		}
 
 		/*auto& out = cmds.emplace_back();
 

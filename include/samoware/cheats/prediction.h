@@ -22,10 +22,6 @@ public:
 	void Start(CUserCmd* cmd);
 	void Finish();
 
-	void StartSimulation(CBasePlayer* ply, CUserCmd* cmd);
-	void SimulateTick(CBasePlayer* ply, CUserCmd* cmd, int numTick);
-	void FinishSimulation(CBasePlayer* ply);
-
 private:
 	float _unpredictedCurtime;
 	float _unpredictedFrametime;
